@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>M87 — Gerador de ícones</title>
+<style>
+  body { background:#050507; color:#f4f4f7; font-family:system-ui,sans-serif; text-align:center; padding:30px 16px; }
+  h1 { letter-spacing:2px; }
+  .row { display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin:24px 0; }
+  .card { background:#131318; border:1px solid #ffffff18; border-radius:16px; padding:16px; }
+  canvas { border-radius:14px; background:#050507; }
+  button, label.up { display:inline-block; margin-top:10px; background:linear-gradient(135deg,#ff6a00,#ffd45e); color:#1a0d00;
+    border:none; border-radius:10px; padding:10px 16px; font-weight:700; cursor:pointer; }
+  label.up { background:#1a1a21; color:#f4f4f7; border:1px solid #ffffff22; }
+  p { color:#9a9aa6; max-width:560px; margin:8px auto; line-height:1.5; }
+  code { background:#1a1a21; padding:2px 6px; border-radius:6px; }
+</style>
+</head>
+<body>
+  <h1>🕳️ Ícones do M87</h1>
+  <p>Clique em <b>Baixar</b> em cada um e salve os arquivos <b>nesta mesma pasta <code>icons/</code></b>
+     com os nomes exatos indicados. Para usar a SUA foto do buraco negro, carregue-a abaixo (recomendado).</p>
+
+  <p><label class="up">📷 Usar minha imagem<input type="file" id="file" accept="image/*" hidden></label></p>
+
+  <div class="row">
+    <div class="card"><div><canvas id="c192" width="192" height="192"></canvas></div>
+      <div><button data-id="c192" data-name="icon-192.png">Baixar icon-192.png</button></div></div>
+    <div class="card"><div><canvas id="c512" width="512" height="512"></canvas></div>
+      <div><button data-id="c512" data-name="icon-512.png">Baixar icon-512.png</button></div></div>
+    <div class="card"><div><canvas id="cmask" width="512" height="512"></canvas></div>
+      <div><button data-id="cmask" data-name="icon-512-maskable.png">Baixar icon-512-maskable.png</button></div>
+      <p style="font-size:12px">com margem de segurança</p></div>
+  </div>
+
+<script>
+let userImg = null;
+
+function drawBlackHole(ctx, size, padding) {
+  const cx = size/2, cy = size/2;
+  ctx.clearRect(0,0,size,size);
+  // fundo
+  ctx.fillStyle = "#050507";
+  roundRect(ctx, 0, 0, size, size, size*0.22); ctx.fill();
+
+  if (userImg) {
+    const s = size - padding*2;
+    // cobre o quadrado central com a imagem
+    ctx.save();
+    roundRect(ctx, padding, padding, s, s, s*0.12); ctx.clip();
+    const ar = userImg.width/userImg.height;
+    let dw = s, dh = s, dx = padding, dy = padding;
+    if (ar > 1) { dh = s; dw = s*ar; dx = padding-(dw-s)/2; }
+    else { dw = s; dh = s/ar; dy = padding-(dh-s)/2; }
+    ctx.drawImage(userImg, dx, dy, dw, dh);
+    ctx.restore();
+    return;
+  }
+
+  const r = (size/2 - padding);
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  g.addColorStop(0.00, "#050507");
+  g.addColorStop(0.55, "#050507");
+  g.addColorStop(0.60, "#ffe79a");
+  g.addColorStop(0.66, "#ffd45e");
+  g.addColorStop(0.74, "#ff8a1e");
+  g.addColorStop(0.82, "#d24f0c");
+  g.addColorStop(0.90, "#6e1f04");
+  g.addColorStop(1.00, "#050507");
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+  // horizonte de eventos (sombra central)
+  ctx.fillStyle = "#050507";
+  ctx.beginPath(); ctx.arc(cx, cy, r*0.60, 0, Math.PI*2); ctx.fill();
+}
+
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+function renderAll() {
+  drawBlackHole(document.getElementById("c192").getContext("2d"), 192, 6);
+  drawBlackHole(document.getElementById("c512").getContext("2d"), 512, 14);
+  // maskable: mais padding (zona de segurança ~20%)
+  drawBlackHole(document.getElementById("cmask").getContext("2d"), 512, 70);
+}
+
+document.getElementById("file").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const img = new Image();
+  img.onload = () => { userImg = img; renderAll(); };
+  img.src = URL.createObjectURL(f);
+};
+
+document.querySelectorAll("button[data-id]").forEach(b => b.onclick = () => {
+  const c = document.getElementById(b.dataset.id);
+  const a = document.createElement("a");
+  a.download = b.dataset.name;
+  a.href = c.toDataURL("image/png");
+  a.click();
+});
+
+renderAll();
+</script>
+</body>
+</html>

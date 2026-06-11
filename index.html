@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050507" />
+  <meta name="description" content="M87" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="M87" />
+
+  <link rel="stylesheet" href="./styles.css" />
+  <title>M87</title>
+</head>
+<body>
+  <!-- ===================== TOPO ===================== -->
+  <header class="app-header">
+    <div class="brand">
+      <img src="./icons/icon-192.png" alt="M87" class="brand-logo" />
+      <h1 class="brand-title">M87</h1>
+    </div>
+
+    <div class="header-actions">
+      <select id="semesterSelect" class="semester-select" aria-label="Semestre"></select>
+      <button id="menuBtn" class="icon-btn" aria-label="Menu">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== VIEWS ===================== -->
+  <main class="app-main">
+    <!-- Dashboard -->
+    <section id="view-dashboard" class="view active">
+      <div class="semester-banner" id="semesterBanner"></div>
+      <div id="dashboardGrid" class="dashboard-grid"></div>
+    </section>
+
+    <!-- Calendário -->
+    <section id="view-calendar" class="view">
+      <div class="cal-toolbar">
+        <button id="calPrev" class="icon-btn" aria-label="Mês anterior">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h2 id="calTitle" class="cal-title"></h2>
+        <button id="calNext" class="icon-btn" aria-label="Próximo mês">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="cal-weekdays">
+        <span>seg</span><span>ter</span><span>qua</span><span>qui</span><span>sex</span><span>sáb</span><span>dom</span>
+      </div>
+      <div id="calGrid" class="cal-grid"></div>
+      <div class="cal-legend">
+        <span><i class="dot dot-falta"></i> Falta</span>
+        <span><i class="dot dot-prof"></i> Prof. faltou</span>
+        <span><i class="dot dot-holiday"></i> Feriado</span>
+        <span><i class="dot dot-noclass"></i> Sem aula</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== NAV INFERIOR ===================== -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="dashboard">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6V11h-6v9Zm0-16v5h6V4h-6Z"/></svg>
+      <span>Painel</span>
+    </button>
+    <button class="nav-btn" data-view="calendar">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm12 7v10H5V9h14Z"/></svg>
+      <span>Calendário</span>
+    </button>
+  </nav>
+
+  <!-- FAB -->
+  <button id="fab" class="fab" aria-label="Registrar ocorrência">
+    <svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
+  </button>
+
+  <!-- ===================== MODAL: DIA ===================== -->
+  <div id="dayModal" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="dayModalTitle">Registrar ocorrência</h3>
+        <button class="icon-btn" data-close-modal aria-label="Fechar">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
+        </button>
+      </div>
+
+      <label class="field">
+        <span>Data</span>
+        <input type="date" id="dayDate" />
+      </label>
+
+      <div id="daySlots" class="slots"></div>
+
+      <div class="day-marks">
+        <button class="chip" data-mark="holiday">🟢 Feriado</button>
+        <button class="chip" data-mark="noclass">⚪ Sem aula</button>
+        <button class="chip chip-clear" data-mark="clear">Limpar dia</button>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+        <button class="btn btn-primary" id="daySaveBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL: MENU / GERENCIAR ===================== -->
+  <div id="manageModal" class="modal-overlay" hidden>
+    <div class="modal modal-lg">
+      <div class="modal-head">
+        <h3>Gerenciar</h3>
+        <button class="icon-btn" data-close-modal aria-label="Fechar">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
+        </button>
+      </div>
+
+      <div class="manage-section">
+        <div class="manage-head">
+          <h4>Matérias — <span id="manageSemLabel"></span></h4>
+          <button class="btn btn-sm btn-primary" id="addSubjectBtn">+ Matéria</button>
+        </div>
+        <div id="subjectList" class="subject-list"></div>
+      </div>
+
+      <div class="manage-section">
+        <h4>Semestres</h4>
+        <div id="semesterList" class="semester-list"></div>
+        <button class="btn btn-sm btn-ghost" id="addSemesterBtn">+ Novo semestre</button>
+      </div>
+
+      <div class="manage-section">
+        <h4>Sincronização entre aparelhos</h4>
+        <p class="muted small">Mantém PC e celular com os mesmos dados, em tempo real (via Firebase, grátis). Veja o passo a passo no README.</p>
+        <div class="row-btns" style="align-items:center">
+          <span id="syncStatus" class="muted small">Desativada</span>
+          <button class="btn btn-sm btn-ghost" id="syncToggleBtn" style="margin-left:auto">Ativar</button>
+        </div>
+      </div>
+
+      <div class="manage-section">
+        <h4>Backup / Compartilhar</h4>
+        <p class="muted small">Os dados ficam salvos só neste aparelho. Exporte para guardar ou enviar a um amigo.</p>
+        <div class="row-btns">
+          <button class="btn btn-sm btn-ghost" id="exportBtn">⬇ Exportar</button>
+          <button class="btn btn-sm btn-ghost" id="importBtn">⬆ Importar</button>
+          <input type="file" id="importFile" accept="application/json" hidden />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL: EDITAR MATÉRIA ===================== -->
+  <div id="subjectModal" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="subjectModalTitle">Matéria</h3>
+        <button class="icon-btn" data-close-modal aria-label="Fechar">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
+        </button>
+      </div>
+
+      <label class="field"><span>Código</span><input type="text" id="subjCode" placeholder="RAD1604" /></label>
+      <label class="field"><span>Nome</span><input type="text" id="subjName" placeholder="Desenvolvimento de Sistemas..." /></label>
+      <label class="field"><span>Professor(a)</span><input type="text" id="subjProf" placeholder="Nome do docente" /></label>
+
+      <div class="field-row">
+        <label class="field"><span>Créditos</span>
+          <select id="subjCredits">
+            <option value="2">2 créditos (máx. 4 faltas)</option>
+            <option value="4">4 créditos (máx. 8 faltas)</option>
+          </select>
+        </label>
+        <label class="field"><span>Cor</span><input type="color" id="subjColor" value="#ff9e2c" /></label>
+      </div>
+
+      <div class="field">
+        <span>Horários (dia + aula)</span>
+        <div id="meetingList" class="meeting-list"></div>
+        <button class="btn btn-sm btn-ghost" id="addMeetingBtn" type="button">+ Adicionar horário</button>
+      </div>
+
+      <div class="modal-foot space-between">
+        <button class="btn btn-ghost btn-danger" id="deleteSubjectBtn">Excluir</button>
+        <div class="row-btns">
+          <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+          <button class="btn btn-primary" id="subjectSaveBtn">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL: SINCRONIZAÇÃO ===================== -->
+  <div id="syncModal" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Sincronização</h3>
+        <button class="icon-btn" data-close-modal aria-label="Fechar">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
+        </button>
+      </div>
+      <p class="muted small">Crie um projeto grátis no Firebase, ative o <b>Firestore</b> e cole abaixo a configuração. Use o <b>mesmo código</b> em todos os aparelhos para eles compartilharem os dados. (Passo a passo detalhado no README.)</p>
+
+      <label class="field"><span>Código de sincronização (igual em todos os aparelhos)</span>
+        <input type="text" id="syncCode" placeholder="ex: victor-m87-2026" autocomplete="off" /></label>
+
+      <label class="field"><span>Configuração do Firebase (objeto firebaseConfig)</span>
+        <textarea id="syncConfig" rows="8" placeholder='{&#10;  "apiKey": "…",&#10;  "authDomain": "…",&#10;  "projectId": "…",&#10;  "appId": "…"&#10;}'></textarea></label>
+
+      <div id="syncMsg" class="small" style="min-height:18px; color:var(--accent-2)"></div>
+
+      <div class="modal-foot space-between">
+        <button class="btn btn-ghost btn-danger" id="syncDisconnectBtn">Desativar</button>
+        <div class="row-btns">
+          <button class="btn btn-ghost" data-close-modal>Fechar</button>
+          <button class="btn btn-primary" id="syncSaveBtn">Conectar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="./sync.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
