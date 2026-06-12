@@ -13,7 +13,8 @@
        }
      },
      occ:   { "2026.1": { "YYYY-MM-DD": { "n1":"falta"|"prof", ... } } },
-     marks: { "2026.1": { "YYYY-MM-DD": "holiday"|"noclass" } }
+     marks: { "2026.1": { "YYYY-MM-DD": "holiday"|"noclass" } },
+     notes: { "2026.1": { "YYYY-MM-DD": "texto da observação" } }
    }
    Slots (horários): manhã m1/m2, noite n1/n2.
    Cada slot com status "falta" = 1 falta. "prof" não conta.
@@ -21,6 +22,7 @@
    ============================================================ */
 
 const STORE_KEY = "m87.data";
+const APP_VERSION = "1.3";
 
 /* Horários possíveis, em ordem cronológica */
 const SLOT_DEFS = [
@@ -75,12 +77,14 @@ function seedData() {
     },
     occ: { "2026.1": {}, "2026.2": {} },
     marks: { "2026.1": {}, "2026.2": {} },
+    notes: { "2026.1": {}, "2026.2": {} },
   };
 }
 
 /* ---------- Estado ---------- */
 let data = loadData();
 let calRef = null;
+let lastSwipe = 0;
 
 function loadData() {
   try {
@@ -97,6 +101,7 @@ function loadData() {
 function migrate(d) {
   d.occ = d.occ || {};
   d.marks = d.marks || {};
+  d.notes = d.notes || {};
   const slotMap = { "1": "n1", "2": "n2", 1: "n1", 2: "n2" };
   for (const sem of Object.values(d.semesters || {})) {
     if (sem.label) sem.label = sem.label.replace(/\s*[–—]\s*/g, " - "); // normaliza travessões
@@ -119,9 +124,7 @@ function migrate(d) {
 }
 
 function saveData() {
-  data._updatedAt = Date.now();
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
-  if (window.M87Sync && M87Sync.getCfg()) M87Sync.push(data);
 }
 
 /* ---------- Helpers ---------- */
@@ -131,6 +134,7 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 function activeSem() { return data.semesters[data.activeSemester]; }
 function semOcc()    { return (data.occ[data.activeSemester]   ||= {}); }
 function semMarks()  { return (data.marks[data.activeSemester] ||= {}); }
+function semNotes()  { return (data.notes[data.activeSemester] ||= {}); }
 function maxFor(subject) { return subject.credits === 4 ? 8 : 4; }
 
 function fmtDate(y, m, d) { return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`; }
@@ -201,7 +205,8 @@ function renderDashboard() {
 
   if (!sem.subjects.length) {
     grid.innerHTML = `<div class="empty-state"><div class="big">🕳️</div>
-      Nenhuma matéria neste semestre.<br/>Toque no menu (⋮) → "+ Matéria".</div>`;
+      Nenhuma matéria neste semestre.<br/>Vá em Config → "+ Matéria".</div>`;
+    $("#semesterSummary").innerHTML = "";
     return;
   }
 
@@ -247,6 +252,54 @@ function renderDashboard() {
       ${alertHtml}`;
     grid.appendChild(card);
   }
+  renderSummary();
+}
+
+/* nº de aulas (sessões) que ainda vão acontecer da matéria, de hoje até o fim do semestre */
+function remainingSessions(subject) {
+  const sem = activeSem();
+  const marks = semMarks();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const start = parseDate(sem.start), end = parseDate(sem.end);
+  let cur = today > start ? new Date(today) : new Date(start);
+  let count = 0;
+  for (; cur <= end; cur.setDate(cur.getDate() + 1)) {
+    const dateStr = fmtDate(cur.getFullYear(), cur.getMonth(), cur.getDate());
+    if (marks[dateStr]) continue; // feriado / sem aula não conta
+    const wd = isoWeekday(cur);
+    for (const m of (subject.meetings || [])) if (m.weekday === wd) count++;
+  }
+  return count;
+}
+
+function renderSummary() {
+  const sem = activeSem();
+  const wrap = $("#semesterSummary");
+  if (!sem.subjects.length) { wrap.innerHTML = ""; return; }
+
+  let usedTotal = 0, maxTotal = 0;
+  const rows = sem.subjects.map(s => {
+    const used = countAbsences(s.id), max = maxFor(s);
+    usedTotal += used; maxTotal += max;
+    return { s, rest: remainingSessions(s) };
+  });
+
+  const list = rows.map(({ s, rest }) => `
+    <div class="sum-item">
+      <span class="sum-dot" style="background:${s.color}"></span>
+      <span class="sum-name">${esc(s.name)}</span>
+      <span class="sum-rest">${rest} aula${rest === 1 ? "" : "s"}</span>
+    </div>`).join("");
+
+  wrap.innerHTML = `
+    <div class="summary-card">
+      <div class="summary-head">
+        <h3>Resumo do semestre</h3>
+        <span class="muted small">${usedTotal}/${maxTotal} faltas no total</span>
+      </div>
+      <div class="sum-subtitle muted small">Aulas restantes por matéria</div>
+      ${list}
+    </div>`;
 }
 
 /* ============================================================
@@ -264,7 +317,7 @@ function renderCalendar() {
   if (!calRef) initCalRef();
   const { year, month } = calRef;
   const sem = activeSem();
-  const occ = semOcc(), marks = semMarks();
+  const occ = semOcc(), marks = semMarks(), notes = semNotes();
 
   const calLabel = new Date(year, month, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
   $("#calTitle").textContent = calLabel.charAt(0).toUpperCase() + calLabel.slice(1);
@@ -320,9 +373,14 @@ function renderCalendar() {
     num.textContent = d;
     cell.appendChild(num);
 
+    if (notes[dateStr]) cell.classList.add("has-note");
+
     if (inSem) {
       cell.classList.add("classday");
-      cell.addEventListener("click", () => openDayModal(dateStr));
+      cell.addEventListener("click", () => {
+        if (Date.now() - lastSwipe < 400) return; // ignora toque logo após deslizar
+        openDayModal(dateStr);
+      });
     }
     grid.appendChild(cell);
   }
@@ -407,6 +465,8 @@ function buildDayModalBody(dateStr) {
       btn.classList.add("active");
     };
   });
+
+  $("#dayNote").value = semNotes()[dateStr] || "";
 }
 
 function saveDayModal() {
@@ -414,8 +474,9 @@ function saveDayModal() {
   if (!newDate) return;
   const occ = semOcc(), marks = semMarks();
 
+  const notes = semNotes();
   const oldDate = dayModalState.date;
-  if (newDate !== oldDate) { delete occ[oldDate]; delete marks[oldDate]; dayModalState.date = newDate; }
+  if (newDate !== oldDate) { delete occ[oldDate]; delete marks[oldDate]; delete notes[oldDate]; dayModalState.date = newDate; }
   const date = newDate;
 
   const markActive = $$("#dayModal .chip[data-mark]").find(c => c.classList.contains("active"));
@@ -433,31 +494,35 @@ function saveDayModal() {
     if (Object.keys(result).length) occ[date] = result; else delete occ[date];
   }
 
+  const noteVal = $("#dayNote").value.trim();
+  if (noteVal) notes[date] = noteVal; else delete notes[date];
+
   saveData();
   closeModals();
   renderAll();
   toast("Salvo ✓");
+  showBackupReminder();
 }
 
 function clearDay() {
   const date = $("#dayDate").value;
   delete semOcc()[date];
   delete semMarks()[date];
+  delete semNotes()[date];
   saveData();
   buildDayModalBody(date); // atualiza o modal mostrando o dia zerado
   renderAll();
   toast("Dia limpo ✓");
+  showBackupReminder();
 }
 
 /* ============================================================
    GERENCIAR
    ============================================================ */
-function openManage() {
-  $("#manageSemLabel").textContent = activeSem().label;
+function renderSettings() {
+  $("#settingsSemLabel").textContent = "· " + activeSem().label;
   renderSubjectList();
   renderSemesterList();
-  renderSyncStatus();
-  showModal("#manageModal");
 }
 
 function renderSubjectList() {
@@ -489,14 +554,26 @@ function renderSemesterList() {
     const row = document.createElement("div");
     row.className = "semester-row" + (key === data.activeSemester ? " active-sem" : "");
     row.innerHTML = `
-      <div><div class="sr-name">${esc(sem.label)}</div>
-        <div class="sr-meta muted small">${sem.subjects.length} matérias</div></div>
-      <button class="btn btn-sm btn-ghost">${key === data.activeSemester ? "Ativo" : "Ativar"}</button>`;
-    row.querySelector("button").onclick = () => {
+      <div style="flex:1; min-width:0">
+        <div class="sr-name">${esc(sem.label)}</div>
+        <div class="sr-meta muted small">${sem.subjects.length} matérias</div>
+      </div>
+      <div class="sem-actions">
+        <button class="btn btn-sm btn-ghost sem-activate">${key === data.activeSemester ? "Ativo" : "Ativar"}</button>
+        <button class="icon-btn icon-btn-sm sem-edit" aria-label="Editar semestre">
+          <svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25ZM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
+        </button>
+        <button class="icon-btn icon-btn-sm sem-del" aria-label="Excluir semestre">
+          <svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Zm3-3h6l1 2h4v2H4V6h4l1-2Z"/></svg>
+        </button>
+      </div>`;
+    row.querySelector(".sem-activate").onclick = () => {
       data.activeSemester = key; saveData();
       $("#semesterSelect").value = key;
-      calRef = null; renderAll(); openManage();
+      calRef = null; renderAll(); renderSettings();
     };
+    row.querySelector(".sem-edit").onclick = () => editSemester(key);
+    row.querySelector(".sem-del").onclick = () => deleteSemester(key);
     list.appendChild(row);
   }
 }
@@ -564,8 +641,9 @@ function saveSubject() {
     sem.subjects.push({ id: "s_" + Date.now().toString(36), ...payload });
   }
   saveData();
-  closeModals(); renderAll(); openManage();
+  closeModals(); renderAll(); renderSettings();
   toast("Matéria salva ✓");
+  showBackupReminder();
 }
 
 function deleteSubject() {
@@ -574,7 +652,8 @@ function deleteSubject() {
   const sem = activeSem();
   sem.subjects = sem.subjects.filter(s => s.id !== editingSubjectId);
   saveData();
-  closeModals(); renderAll(); openManage();
+  closeModals(); renderAll(); renderSettings();
+  showBackupReminder();
 }
 
 /* ---- Novo semestre ---- */
@@ -586,12 +665,48 @@ function addSemester() {
   const start = prompt("Data de início (AAAA-MM-DD):", "2027-02-01") || "2027-02-01";
   const end = prompt("Data de fim (AAAA-MM-DD):", "2027-06-30") || "2027-06-30";
   data.semesters[key] = { label, start, end, subjects: [] };
-  data.occ[key] = {}; data.marks[key] = {};
+  data.occ[key] = {}; data.marks[key] = {}; data.notes[key] = {};
   data.activeSemester = key;
   saveData();
   buildSemesterSelect();
-  calRef = null; renderAll(); openManage();
+  calRef = null; renderAll(); renderSettings();
   toast("Semestre criado ✓");
+  showBackupReminder();
+}
+
+function editSemester(key) {
+  const sem = data.semesters[key];
+  const label = prompt("Nome do semestre:", sem.label);
+  if (label === null) return; // cancelou
+  const start = prompt("Data de início (AAAA-MM-DD):", sem.start) || sem.start;
+  const end = prompt("Data de fim (AAAA-MM-DD):", sem.end) || sem.end;
+  sem.label = label.trim() || sem.label;
+  sem.start = start;
+  sem.end = end;
+  saveData();
+  buildSemesterSelect();
+  calRef = null; renderAll(); renderSettings();
+  toast("Semestre atualizado ✓");
+  showBackupReminder();
+}
+
+function deleteSemester(key) {
+  if (Object.keys(data.semesters).length <= 1) {
+    alert("Não é possível excluir o único semestre. Crie outro antes de excluir este.");
+    return;
+  }
+  const sem = data.semesters[key];
+  if (!confirm(`Excluir o semestre "${sem.label}" e TODAS as faltas dele? Esta ação não pode ser desfeita.`)) return;
+  delete data.semesters[key];
+  delete data.occ[key];
+  delete data.marks[key];
+  delete data.notes[key];
+  if (data.activeSemester === key) data.activeSemester = Object.keys(data.semesters)[0];
+  saveData();
+  buildSemesterSelect();
+  calRef = null; renderAll(); renderSettings();
+  toast("Semestre excluído");
+  showBackupReminder();
 }
 
 /* ---- Backup ---- */
@@ -600,7 +715,7 @@ function exportData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `m87-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = "m87-backup.json"; // nome fixo: substitui o backup anterior em vez de acumular
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -621,80 +736,74 @@ function importData(file) {
   reader.readAsText(file);
 }
 
+function wipeAllData() {
+  const ans = prompt("Isto vai APAGAR TODOS os dados e restaurar o padrão (não pode ser desfeito).\n\nDigite APAGAR para confirmar:");
+  if (ans === null) return;
+  if (ans.trim().toUpperCase() !== "APAGAR") { alert("Confirmação incorreta. Nada foi apagado."); return; }
+  localStorage.removeItem(STORE_KEY);
+  data = seedData();
+  saveData();
+  buildSemesterSelect();
+  calRef = null;
+  renderAll();
+  renderSettings();
+  toast("Dados apagados. Padrão restaurado.");
+}
+
+/* Pixel art (X = pixel aceso, espaço = vazio) */
+const PIX_VIWCTOR = [   // Saturno: planeta + anel (10 linhas, mesma altura do robô)
+  "     XXX     ",
+  "    XXXXX    ",
+  "   XXXXXXX   ",
+  "   XXXXXXX   ",
+  "XX XXXXXXX XX",
+  "XX XXXXXXX XX",
+  "   XXXXXXX   ",
+  "   XXXXXXX   ",
+  "    XXXXX    ",
+  "     XXX     ",
+];
+const PIX_CLAUDE = [    // robô estilo Claude Code
+  " XXXXXXXXXXXX ",
+  " XXXXXXXXXXXX ",
+  " XXX XXXX XXX ",
+  " XXX XXXX XXX ",
+  "XXXXXXXXXXXXXX",
+  "XXXXXXXXXXXXXX",
+  " XXXXXXXXXXXX ",
+  " XXXXXXXXXXXX ",
+  "  X X    X X  ",
+  "  X X    X X  ",
+];
+
+function renderPixel(el, rows) {
+  if (!el) return;
+  el.style.gridTemplateColumns = `repeat(${rows[0].length}, 6px)`;
+  el.innerHTML = "";
+  for (const row of rows) for (const ch of row) {
+    const s = document.createElement("span");
+    if (ch !== " ") s.className = "on";
+    el.appendChild(s);
+  }
+}
+
+function openAbout() {
+  $("#aboutVersion").textContent = "v" + APP_VERSION;
+  renderPixel($("#pixViwctor"), PIX_VIWCTOR);
+  renderPixel($("#pixClaude"), PIX_CLAUDE);
+  showModal("#aboutModal");
+}
+
 /* ============================================================
-   SINCRONIZAÇÃO (Firebase, opcional)
+   LEMBRETE DE BACKUP
    ============================================================ */
-function renderSyncStatus() {
-  const cfg = window.M87Sync && M87Sync.getCfg();
-  const el = $("#syncStatus");
-  if (el) el.textContent = cfg ? `Ativada · código “${cfg.code}” · ${M87Sync.status()}` : "Desativada";
-  const btn = $("#syncToggleBtn");
-  if (btn) btn.textContent = cfg ? "Gerenciar" : "Ativar";
+function showBackupReminder() {
+  const el = $("#backupReminder");
+  if (el) el.hidden = false;
 }
-
-function openSyncModal() {
-  const cfg = M87Sync.getCfg();
-  $("#syncCode").value = cfg?.code || "";
-  $("#syncConfig").value = cfg ? JSON.stringify(cfg.config, null, 2) : "";
-  $("#syncDisconnectBtn").style.display = cfg ? "" : "none";
-  $("#syncMsg").textContent = "";
-  showModal("#syncModal");
-}
-
-function parseFirebaseConfig(text) {
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error("Cole o objeto firebaseConfig do console do Firebase.");
-  return Function('"use strict";return (' + m[0] + ")")();
-}
-
-async function saveSync() {
-  try {
-    const code = $("#syncCode").value.trim();
-    if (!code) throw new Error("Defina um código de sincronização.");
-    const config = parseFirebaseConfig($("#syncConfig").value);
-    if (!config.projectId) throw new Error("Configuração inválida (faltou projectId).");
-    M87Sync.setCfg({ config, code });
-    $("#syncMsg").textContent = "Conectando…";
-    await M87Sync.connect({ config, code }, handleRemote,
-      st => { $("#syncMsg").textContent = "Status: " + st; renderSyncStatus(); });
-    renderSyncStatus();
-    toast("Sincronização ativada ✓");
-  } catch (e) {
-    $("#syncMsg").textContent = "Erro: " + e.message;
-  }
-}
-
-function disconnectSync() {
-  M87Sync.disconnect();
-  renderSyncStatus();
-  closeModals();
-  toast("Sincronização desativada");
-}
-
-/* recebe o documento remoto e decide se aplica (mais novo) ou reenvia (local mais novo) */
-function handleRemote(remote) {
-  if (!remote || !remote.payload) {            // nuvem vazia → envia o que já existe aqui
-    data._updatedAt = data._updatedAt || Date.now();
-    M87Sync.push(data);
-    return;
-  }
-  const rUp = remote.updatedAt || 0, lUp = data._updatedAt || 0;
-  if (rUp > lUp) applyRemote(remote);
-  else if (rUp < lUp) M87Sync.push(data);
-}
-
-function applyRemote(remote) {
-  try {
-    const incoming = migrate(JSON.parse(remote.payload));
-    incoming._updatedAt = remote.updatedAt;
-    data = incoming;
-    localStorage.setItem(STORE_KEY, JSON.stringify(data)); // grava sem reenviar
-    if (!data.semesters[data.activeSemester]) data.activeSemester = Object.keys(data.semesters)[0];
-    buildSemesterSelect();
-    calRef = null;
-    renderAll();
-    toast("Sincronizado ⟳");
-  } catch (e) { console.error("applyRemote", e); }
+function hideBackupReminder() {
+  const el = $("#backupReminder");
+  if (el) el.hidden = true;
 }
 
 /* ============================================================
@@ -719,6 +828,8 @@ function switchView(view) {
   $(`#view-${view}`).classList.add("active");
   $$(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === view));
   if (view === "calendar") renderCalendar();
+  if (view === "settings") renderSettings();
+  $("#fab").hidden = (view === "settings"); // FAB só faz sentido em Painel/Calendário
   if (location.hash.slice(1) !== view) history.replaceState(null, "", "#" + view);
 }
 
@@ -732,10 +843,24 @@ function bindEvents() {
     data.activeSemester = e.target.value; saveData();
     calRef = null; renderAll();
   };
-  $("#menuBtn").onclick = openManage;
   $$(".nav-btn").forEach(b => b.onclick = () => switchView(b.dataset.view));
   $("#calPrev").onclick = () => calShift(-1);
   $("#calNext").onclick = () => calShift(1);
+
+  // deslizar para trocar de mês no calendário
+  let _sx = null, _sy = null;
+  const cg = $("#calGrid");
+  cg.addEventListener("touchstart", e => { _sx = e.changedTouches[0].clientX; _sy = e.changedTouches[0].clientY; }, { passive: true });
+  cg.addEventListener("touchend", e => {
+    if (_sx === null) return;
+    const dx = e.changedTouches[0].clientX - _sx;
+    const dy = e.changedTouches[0].clientY - _sy;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      lastSwipe = Date.now();
+      calShift(dx < 0 ? 1 : -1);
+    }
+    _sx = _sy = null;
+  }, { passive: true });
 
   $("#fab").onclick = () => {
     const today = new Date();
@@ -766,10 +891,11 @@ function bindEvents() {
   $("#exportBtn").onclick = exportData;
   $("#importBtn").onclick = () => $("#importFile").click();
   $("#importFile").onchange = e => e.target.files[0] && importData(e.target.files[0]);
+  $("#wipeBtn").onclick = wipeAllData;
+  $("#aboutBtn").onclick = openAbout;
 
-  $("#syncToggleBtn").onclick = openSyncModal;
-  $("#syncSaveBtn").onclick = saveSync;
-  $("#syncDisconnectBtn").onclick = disconnectSync;
+  $("#brBackup").onclick = () => { hideBackupReminder(); exportData(); };
+  $("#brDismiss").onclick = hideBackupReminder;
 
   $$("[data-close-modal]").forEach(b => b.onclick = closeModals);
   $$(".modal-overlay").forEach(ov => ov.addEventListener("click", e => { if (e.target === ov) closeModals(); }));
@@ -782,12 +908,14 @@ function init() {
   buildSemesterSelect();
   bindEvents();
   renderAll();
-  if (location.hash.slice(1) === "calendar") switchView("calendar");
+  const hv = location.hash.slice(1);
+  if (hv === "calendar" || hv === "settings") switchView(hv);
 
-  // reconecta a sincronização se já estiver configurada
-  if (window.M87Sync && M87Sync.getCfg()) {
-    M87Sync.connect(M87Sync.getCfg(), handleRemote, () => renderSyncStatus()).catch(() => {});
-  }
+  // animação de abertura
+  setTimeout(() => {
+    const sp = $("#splash");
+    if (sp) { sp.classList.add("hide"); setTimeout(() => sp.remove(), 450); }
+  }, 1100);
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));

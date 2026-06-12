@@ -18,18 +18,22 @@
   <title>M87</title>
 </head>
 <body>
+  <!-- ===================== SPLASH / ABERTURA ===================== -->
+  <div id="splash" class="splash">
+    <div class="splash-bh">
+      <span class="ring"></span><span class="ring"></span>
+      <img src="./icons/icon-192.png" alt="" />
+    </div>
+  </div>
+
   <!-- ===================== TOPO ===================== -->
   <header class="app-header">
     <div class="brand">
       <img src="./icons/icon-192.png" alt="M87" class="brand-logo" />
       <h1 class="brand-title">M87</h1>
     </div>
-
     <div class="header-actions">
       <select id="semesterSelect" class="semester-select" aria-label="Semestre"></select>
-      <button id="menuBtn" class="icon-btn" aria-label="Menu">
-        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
-      </button>
     </div>
   </header>
 
@@ -39,6 +43,7 @@
     <section id="view-dashboard" class="view active">
       <div class="semester-banner" id="semesterBanner"></div>
       <div id="dashboardGrid" class="dashboard-grid"></div>
+      <div id="semesterSummary" class="summary-wrap"></div>
     </section>
 
     <!-- Calendário -->
@@ -63,6 +68,39 @@
         <span><i class="dot dot-noclass"></i> Sem aula</span>
       </div>
     </section>
+
+    <!-- Configurações -->
+    <section id="view-settings" class="view">
+      <div class="manage-section">
+        <h4>Backup</h4>
+        <p class="muted small">Os dados ficam salvos só neste aparelho. Exporte para guardar ou enviar a um amigo.</p>
+        <div class="row-btns">
+          <button class="btn btn-sm btn-primary" id="exportBtn">Exportar</button>
+          <button class="btn btn-sm btn-ghost" id="importBtn">Importar</button>
+          <input type="file" id="importFile" accept="application/json" hidden />
+        </div>
+        <button class="btn btn-sm btn-ghost btn-danger wipe-btn" id="wipeBtn">Apagar todos os dados</button>
+      </div>
+
+      <div class="manage-section">
+        <div class="manage-head">
+          <h4>Matérias <span class="muted small" id="settingsSemLabel"></span></h4>
+          <button class="btn btn-sm btn-primary" id="addSubjectBtn">+ Matéria</button>
+        </div>
+        <div id="subjectList" class="subject-list"></div>
+      </div>
+
+      <div class="manage-section">
+        <h4>Semestres</h4>
+        <div id="semesterList" class="semester-list"></div>
+        <button class="btn btn-sm btn-ghost" id="addSemesterBtn">+ Novo semestre</button>
+      </div>
+
+      <div class="manage-section">
+        <h4>Sobre</h4>
+        <button class="btn btn-sm btn-ghost" id="aboutBtn">Sobre o aplicativo</button>
+      </div>
+    </section>
   </main>
 
   <!-- ===================== NAV INFERIOR ===================== -->
@@ -74,6 +112,10 @@
     <button class="nav-btn" data-view="calendar">
       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm12 7v10H5V9h14Z"/></svg>
       <span>Calendário</span>
+    </button>
+    <button class="nav-btn" data-view="settings">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M19.14 12.94a7.49 7.49 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.3 7.3 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.49 7.49 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.43.34.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.18.12.47.02.61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
+      <span>Config</span>
     </button>
   </nav>
 
@@ -99,60 +141,20 @@
 
       <div id="daySlots" class="slots"></div>
 
+      <label class="field">
+        <span>Observação (opcional)</span>
+        <input type="text" id="dayNote" placeholder="ex: consulta médica" autocomplete="off" />
+      </label>
+
       <div class="day-marks">
-        <button class="chip" data-mark="holiday">🟢 Feriado</button>
-        <button class="chip" data-mark="noclass">⚪ Sem aula</button>
+        <button class="chip" data-mark="holiday">Feriado</button>
+        <button class="chip" data-mark="noclass">Sem aula</button>
         <button class="chip chip-clear" data-mark="clear">Limpar dia</button>
       </div>
 
       <div class="modal-foot">
         <button class="btn btn-ghost" data-close-modal>Cancelar</button>
         <button class="btn btn-primary" id="daySaveBtn">Salvar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================== MODAL: MENU / GERENCIAR ===================== -->
-  <div id="manageModal" class="modal-overlay" hidden>
-    <div class="modal modal-lg">
-      <div class="modal-head">
-        <h3>Gerenciar</h3>
-        <button class="icon-btn" data-close-modal aria-label="Fechar">
-          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
-        </button>
-      </div>
-
-      <div class="manage-section">
-        <div class="manage-head">
-          <h4>Matérias — <span id="manageSemLabel"></span></h4>
-          <button class="btn btn-sm btn-primary" id="addSubjectBtn">+ Matéria</button>
-        </div>
-        <div id="subjectList" class="subject-list"></div>
-      </div>
-
-      <div class="manage-section">
-        <h4>Semestres</h4>
-        <div id="semesterList" class="semester-list"></div>
-        <button class="btn btn-sm btn-ghost" id="addSemesterBtn">+ Novo semestre</button>
-      </div>
-
-      <div class="manage-section">
-        <h4>Sincronização entre aparelhos</h4>
-        <p class="muted small">Mantém PC e celular com os mesmos dados, em tempo real (via Firebase, grátis). Veja o passo a passo no README.</p>
-        <div class="row-btns" style="align-items:center">
-          <span id="syncStatus" class="muted small">Desativada</span>
-          <button class="btn btn-sm btn-ghost" id="syncToggleBtn" style="margin-left:auto">Ativar</button>
-        </div>
-      </div>
-
-      <div class="manage-section">
-        <h4>Backup / Compartilhar</h4>
-        <p class="muted small">Os dados ficam salvos só neste aparelho. Exporte para guardar ou enviar a um amigo.</p>
-        <div class="row-btns">
-          <button class="btn btn-sm btn-ghost" id="exportBtn">⬇ Exportar</button>
-          <button class="btn btn-sm btn-ghost" id="importBtn">⬆ Importar</button>
-          <input type="file" id="importFile" accept="application/json" hidden />
-        </div>
       </div>
     </div>
   </div>
@@ -197,38 +199,54 @@
     </div>
   </div>
 
-  <!-- ===================== MODAL: SINCRONIZAÇÃO ===================== -->
-  <div id="syncModal" class="modal-overlay" hidden>
-    <div class="modal">
+  <!-- ===================== MODAL: SOBRE ===================== -->
+  <div id="aboutModal" class="modal-overlay" hidden>
+    <div class="modal about-modal">
       <div class="modal-head">
-        <h3>Sincronização</h3>
+        <h3>Sobre</h3>
         <button class="icon-btn" data-close-modal aria-label="Fechar">
           <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
         </button>
       </div>
-      <p class="muted small">Crie um projeto grátis no Firebase, ative o <b>Firestore</b> e cole abaixo a configuração. Use o <b>mesmo código</b> em todos os aparelhos para eles compartilharem os dados. (Passo a passo detalhado no README.)</p>
-
-      <label class="field"><span>Código de sincronização (igual em todos os aparelhos)</span>
-        <input type="text" id="syncCode" placeholder="ex: victor-m87-2026" autocomplete="off" /></label>
-
-      <label class="field"><span>Configuração do Firebase (objeto firebaseConfig)</span>
-        <textarea id="syncConfig" rows="8" placeholder='{&#10;  "apiKey": "…",&#10;  "authDomain": "…",&#10;  "projectId": "…",&#10;  "appId": "…"&#10;}'></textarea></label>
-
-      <div id="syncMsg" class="small" style="min-height:18px; color:var(--accent-2)"></div>
-
-      <div class="modal-foot space-between">
-        <button class="btn btn-ghost btn-danger" id="syncDisconnectBtn">Desativar</button>
-        <div class="row-btns">
-          <button class="btn btn-ghost" data-close-modal>Fechar</button>
-          <button class="btn btn-primary" id="syncSaveBtn">Conectar</button>
+      <div class="terminal">
+<pre class="t-head">Projeto M87
+<span id="aboutVersion"></span></pre>
+<pre class="t-log">Melhorias desta versão:
+  - Resumo do semestre e aulas restantes
+  - Anotações por dia no registro
+  - Calendário: deslizar para trocar de mês
+  - Animação de abertura
+  - Aba de configurações com backup e "apagar tudo"
+  - Cantos arredondados no ícone
+</pre>
+        <div class="credits">
+          <div class="t-label">Desenvolvido por:</div>
+          <div class="credit-row">
+            <div class="credit cred-viw">
+              <div class="pixel-art" id="pixViwctor"></div>
+              <span>viwctor</span>
+            </div>
+            <div class="credit cred-claude">
+              <div class="pixel-art" id="pixClaude"></div>
+              <span>Claude</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Lembrete de backup -->
+  <div id="backupReminder" class="backup-reminder" hidden>
+    <span class="br-text">Alteração salva. Faça um backup para não perder seus dados.</span>
+    <div class="br-actions">
+      <button class="btn btn-sm btn-ghost" id="brDismiss">Dispensar</button>
+      <button class="btn btn-sm btn-primary" id="brBackup">Fazer backup</button>
+    </div>
+  </div>
+
   <div id="toast" class="toast" hidden></div>
 
-  <script src="./sync.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

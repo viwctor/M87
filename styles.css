@@ -324,7 +324,6 @@ input, select, textarea {
   font-family: inherit;
 }
 textarea { resize: vertical; line-height: 1.4; }
-#syncConfig { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12.5px; }
 input[type="color"] { padding: 4px; height: 44px; }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 
@@ -392,6 +391,28 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .meeting-row select { flex: 1; }
 .meeting-row .del-meet { flex-shrink: 0; width: 40px; }
 
+/* Ações de semestre (ativar / editar / excluir) */
+.sem-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.icon-btn-sm { width: 34px; height: 34px; border-radius: 9px; }
+.sem-del { color: var(--danger); }
+
+/* Lembrete de backup */
+.backup-reminder {
+  position: fixed; left: 12px; right: 12px;
+  bottom: calc(150px + var(--safe-area-b));
+  z-index: 40;
+  max-width: 520px; margin: 0 auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  box-shadow: var(--shadow);
+  animation: slideup .25s ease;
+}
+.br-text { font-size: 13px; color: var(--text); line-height: 1.35; }
+.br-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
 /* Toast */
 .toast {
   position: fixed; left: 50%; bottom: calc(96px + var(--safe-area-b));
@@ -401,5 +422,79 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
   padding: 11px 18px; font-size: 13.5px; z-index: 60;
   box-shadow: var(--shadow); animation: fade .2s ease;
 }
+
+/* ===================== SPLASH / ABERTURA ===================== */
+.splash {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: grid; place-items: center;
+  transition: opacity .4s ease;
+}
+.splash.hide { opacity: 0; pointer-events: none; }
+.splash-bh { position: relative; width: 130px; height: 130px; display: grid; place-items: center; }
+.splash-bh img {
+  width: 100px; height: 100px; border-radius: 26px;
+  animation: bhPulse 1.5s ease-in-out infinite;
+}
+.splash-bh .ring {
+  position: absolute; width: 100px; height: 100px;
+  border-radius: 50%; border: 2px solid var(--accent);
+  opacity: 0; animation: bhRing 1.7s ease-out infinite;
+}
+.splash-bh .ring:nth-child(2) { animation-delay: .6s; }
+@keyframes bhPulse {
+  0%,100% { transform: scale(.95); filter: drop-shadow(0 0 10px var(--accent-glow)); }
+  50%     { transform: scale(1.05); filter: drop-shadow(0 0 26px var(--accent-glow)); }
+}
+@keyframes bhRing {
+  0%   { transform: scale(.85); opacity: .55; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* ===================== RESUMO DO SEMESTRE ===================== */
+.summary-wrap { margin-top: 16px; }
+.summary-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.summary-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.summary-head h3 { font-size: 15px; }
+.sum-subtitle { margin: 10px 0 6px; }
+.sum-item { display: flex; align-items: center; gap: 9px; padding: 7px 0; border-top: 1px solid var(--border); }
+.sum-item:first-of-type { border-top: none; }
+.sum-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.sum-name { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sum-rest { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+/* nota marcada no calendário */
+.cal-cell.has-note .cal-day-num::after {
+  content: ""; position: absolute; top: 4px; right: 5px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2);
+}
+
+/* botão apagar tudo */
+.wipe-btn { margin-top: 10px; width: 100%; }
+
+/* ===================== SOBRE (terminal) ===================== */
+.about-modal .terminal {
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  background: #08080b; border: 1px solid var(--border-2);
+  border-radius: 12px; padding: 14px;
+  font-size: 12.5px; color: #cfcfd6; line-height: 1.5;
+}
+.terminal pre { margin: 0; white-space: pre-wrap; font-family: inherit; }
+.t-head { color: var(--accent-2); font-weight: 700; }
+.t-head #aboutVersion { color: var(--muted); font-weight: 400; }
+.t-log { color: #9a9aa6; margin: 10px 0; }
+.credits { margin-top: 14px; }
+.credits .t-label { color: var(--muted); margin-bottom: 14px; }
+.credit-row { display: flex; gap: 28px; justify-content: center; align-items: flex-end; text-align: center; }
+.credit { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+.credit span { font-size: 12px; color: inherit; }
+.cred-viw { color: var(--muted); }
+.cred-claude { color: #d97757; }
+.pixel-art { display: grid; grid-auto-rows: 6px; line-height: 0; }
+.pixel-art span { width: 6px; height: 6px; display: block; }
+.pixel-art span.on { background: currentColor; }
 
 [hidden] { display: none !important; }

@@ -1,11 +1,10 @@
 /* M87 — Service Worker (offline-first app shell) */
-const CACHE = "m87-v4";
+const CACHE = "m87-v1.3";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
-  "./sync.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
