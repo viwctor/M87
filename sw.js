@@ -30,8 +30,7 @@ self.addEventListener("fetch", (e) => {
   const { request } = e;
   if (request.method !== "GET") return;
 
-  // Não intercepta domínios externos (Firebase/Firestore/CDN): deixa a rede cuidar,
-  // senão o streaming em tempo real da sincronização quebra.
+  // Só gerencia arquivos do próprio site; recursos externos vão direto pela rede.
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 

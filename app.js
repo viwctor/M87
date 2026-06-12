@@ -119,6 +119,10 @@ function migrate(d) {
       }
     }
   }
+  // garante que o semestre ativo realmente existe (protege contra backups corrompidos)
+  if (d.semesters && !d.semesters[d.activeSemester]) {
+    d.activeSemester = Object.keys(d.semesters)[0];
+  }
   d.version = 2;
   return d;
 }
@@ -140,6 +144,7 @@ function maxFor(subject) { return subject.credits === 4 ? 8 : 4; }
 function fmtDate(y, m, d) { return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`; }
 function parseDate(str) { const [y, m, d] = str.split("-").map(Number); return new Date(y, m - 1, d); }
 function isoWeekday(dateObj) { const wd = dateObj.getDay(); return wd === 0 ? 7 : wd; }
+function isValidDate(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(parseDate(s).getTime()); }
 
 /* mapa weekday -> { slotId: subject } */
 function buildTimetable() {
@@ -664,6 +669,7 @@ function addSemester() {
   const label = prompt("Nome para exibir (ex: 5º Semestre):", key) || key;
   const start = prompt("Data de início (AAAA-MM-DD):", "2027-02-01") || "2027-02-01";
   const end = prompt("Data de fim (AAAA-MM-DD):", "2027-06-30") || "2027-06-30";
+  if (!isValidDate(start) || !isValidDate(end)) { alert("Datas inválidas. Use o formato AAAA-MM-DD."); return; }
   data.semesters[key] = { label, start, end, subjects: [] };
   data.occ[key] = {}; data.marks[key] = {}; data.notes[key] = {};
   data.activeSemester = key;
@@ -680,6 +686,7 @@ function editSemester(key) {
   if (label === null) return; // cancelou
   const start = prompt("Data de início (AAAA-MM-DD):", sem.start) || sem.start;
   const end = prompt("Data de fim (AAAA-MM-DD):", sem.end) || sem.end;
+  if (!isValidDate(start) || !isValidDate(end)) { alert("Datas inválidas. Use o formato AAAA-MM-DD."); return; }
   sem.label = label.trim() || sem.label;
   sem.start = start;
   sem.end = end;
