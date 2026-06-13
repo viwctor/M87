@@ -1,5 +1,5 @@
 /* M87 — Service Worker (offline-first app shell) */
-const CACHE = "m87-v0.8";
+const CACHE = "m87-v0.9";
 const ASSETS = [
   "./",
   "./index.html",
@@ -35,16 +35,15 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  // rede-primeiro: sempre tenta o conteúdo mais novo; cai no cache se estiver offline
   e.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => cached || (request.mode === "navigate" ? caches.match("./index.html") : undefined));
-      return cached || network;
-    })
+    fetch(request)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+        return res;
+      })
+      .catch(() => caches.match(request).then((c) =>
+        c || (request.mode === "navigate" ? caches.match("./index.html") : undefined)))
   );
 });

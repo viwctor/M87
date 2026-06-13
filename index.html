@@ -62,19 +62,13 @@
   <main class="app-main">
     <!-- Matérias -->
     <section id="view-subjects" class="view">
-      <div class="semester-banner" id="subjectsBanner"></div>
       <div id="subjectsByDay"></div>
       <div class="manage-section">
         <div class="manage-head">
-          <h4>Editar matérias</h4>
-          <button class="btn btn-sm btn-primary" id="addSubjectBtn">+ Matéria</button>
+          <h4>Lista de matérias</h4>
+          <button class="btn btn-sm btn-primary" id="addSubjectBtn">+ Nova matéria</button>
         </div>
         <div id="subjectList" class="subject-list"></div>
-      </div>
-      <div class="manage-section">
-        <h4>Semestres</h4>
-        <div id="semesterList" class="semester-list"></div>
-        <button class="btn btn-sm btn-ghost" id="addSemesterBtn">+ Novo semestre</button>
       </div>
     </section>
 
@@ -209,8 +203,8 @@
       </div>
 
       <label class="field"><span>Nome da matéria *</span><input type="text" id="subjName" placeholder="ex: Matemática Financeira" /></label>
-      <label class="field"><span>Professor(a) <span class="muted">(opcional)</span></span><input type="text" id="subjProf" placeholder="Nome do docente" /></label>
-      <label class="field"><span>E-mail USP do professor <span class="muted">(opcional)</span></span><input type="email" id="subjEmail" placeholder="docente@usp.br" /></label>
+      <label class="field"><span>Professor(a)</span><input type="text" id="subjProf" placeholder="Nome do docente" /></label>
+      <label class="field"><span>E-mail USP do professor</span><input type="email" id="subjEmail" placeholder="docente@usp.br" /></label>
 
       <label class="field"><span>Créditos</span>
         <select id="subjCredits">
@@ -225,7 +219,7 @@
       </div>
 
       <div class="field">
-        <span>Horários <span class="muted">(opcional — dia + aula)</span></span>
+        <span>Horários</span>
         <div id="meetingList" class="meeting-list"></div>
         <button class="btn btn-sm btn-ghost" id="addMeetingBtn" type="button">+ Adicionar horário</button>
       </div>

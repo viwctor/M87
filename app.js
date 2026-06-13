@@ -309,7 +309,7 @@ function renderDashboard() {
     $("#semesterSummary").innerHTML = "";
     return;
   }
-  $("#semesterBanner").textContent = `${sem.label} · ${sem.subjects.length} matéria(s)`;
+  $("#semesterBanner").textContent = `${sem.subjects.length} matéria(s)`;
 
   const grid = $("#dashboardGrid");
   grid.innerHTML = "";
@@ -671,11 +671,8 @@ function clearDay() {
    GUIA MATÉRIAS + CONFIG
    ============================================================ */
 function renderSubjectsTab() {
-  const sem = activeSem();
-  $("#subjectsBanner").textContent = sem ? sem.label : "Nenhum semestre — crie um no topo";
   renderSubjectsByDay();
   renderSubjectList();
-  renderSemesterList();
 }
 
 /* informações das matérias agrupadas por dia da semana (seg–sex) */
@@ -683,7 +680,7 @@ function renderSubjectsByDay() {
   const wrap = $("#subjectsByDay");
   wrap.innerHTML = "";
   let any = false;
-  for (let wd = 1; wd <= 5; wd++) {
+  for (let wd = 1; wd <= 6; wd++) {
     const slots = slotsForWeekday(wd);
     if (!slots.length) continue;
     any = true;
@@ -759,39 +756,12 @@ function renderSubjectList() {
       <span class="sr-color" style="background:${s.color}"></span>
       <div class="sr-info">
         <div class="sr-name">${esc(s.name || "(sem nome)")}</div>
-        <div class="sr-meta">${s.credits} créditos · máx ${maxFor(s)} · ${meetingsText(s)}</div>
+        <div class="sr-meta">${s.credits} créditos · ${meetingsText(s)}</div>
       </div>
       <button class="icon-btn" aria-label="Editar">
         <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25ZM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
       </button>`;
     row.querySelector("button").onclick = () => openSubjectEditor(s.id);
-    list.appendChild(row);
-  }
-}
-
-function renderSemesterList() {
-  const list = $("#semesterList");
-  list.innerHTML = "";
-  for (const [key, sem] of Object.entries(data.semesters)) {
-    const row = document.createElement("div");
-    row.className = "semester-row" + (key === data.activeSemester ? " active-sem" : "");
-    row.innerHTML = `
-      <div style="flex:1; min-width:0">
-        <div class="sr-name">${esc(sem.label)}</div>
-        <div class="sr-meta muted small">${sem.subjects.length} matérias</div>
-      </div>
-      <div class="sem-actions">
-        <button class="btn btn-sm btn-ghost sem-activate">${key === data.activeSemester ? "Ativo" : "Ativar"}</button>
-        <button class="icon-btn icon-btn-sm sem-edit" aria-label="Editar semestre">
-          <svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25ZM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
-        </button>
-        <button class="icon-btn icon-btn-sm sem-del" aria-label="Excluir semestre">
-          <svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Zm3-3h6l1 2h4v2H4V6h4l1-2Z"/></svg>
-        </button>
-      </div>`;
-    row.querySelector(".sem-activate").onclick = () => selectSemester(key);
-    row.querySelector(".sem-edit").onclick = () => openSemesterEditor(key);
-    row.querySelector(".sem-del").onclick = () => deleteSemester(key);
     list.appendChild(row);
   }
 }
@@ -1101,12 +1071,20 @@ function openSemesterPicker() {
   for (const [key, sem] of Object.entries(data.semesters)) {
     const detail = sem.label.includes("(")
       ? sem.label.slice(sem.label.indexOf("(") + 1).replace(")", "").trim() : "";
+    const row = document.createElement("div");
+    row.className = "picker-row";
     const b = document.createElement("button");
     b.className = "picker-item" + (key === data.activeSemester ? " active" : "");
     b.innerHTML = `<span class="pi-name">${esc(shortSemLabel(sem.label))}</span>` +
                   (detail ? `<span class="pi-detail">${esc(detail)}</span>` : "");
     b.onclick = () => { selectSemester(key); closeModals(); };
-    list.appendChild(b);
+    const edit = document.createElement("button");
+    edit.className = "icon-btn picker-edit";
+    edit.setAttribute("aria-label", "Editar semestre");
+    edit.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25ZM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>`;
+    edit.onclick = () => { closeModals(); openSemesterEditor(key); };
+    row.appendChild(b); row.appendChild(edit);
+    list.appendChild(row);
   }
   const create = document.createElement("button");
   create.className = "btn btn-sm btn-ghost";
@@ -1203,7 +1181,6 @@ function bindEvents() {
   $("#subjectSaveBtn").onclick = saveSubject;
   $("#deleteSubjectBtn").onclick = deleteSubject;
   $("#addMeetingBtn").onclick = () => $("#meetingList").appendChild(meetingRow({ weekday: 1, slot: data.lastCustomTime || "n1", room: "" }));
-  $("#addSemesterBtn").onclick = () => openSemesterEditor(null);
   $("#semSaveBtn").onclick = saveSemesterFromModal;
   $("#semDeleteBtn").onclick = () => { const k = editingSemesterKey; closeModals(); deleteSemester(k); };
 
@@ -1223,20 +1200,20 @@ function bindEvents() {
   $("#brBackup").onclick = () => { hideBackupReminder(); exportData(); };
   $("#brDismiss").onclick = hideBackupReminder;
 
-  // deslizar em área vazia troca de guia (mobile)
+  // deslizar troca de guia (mobile) — funciona em qualquer área, exceto o grid de datas
   const order = ["subjects", "dashboard", "calendar", "settings"];
   let _mx = null, _my = null, _mt = null;
-  const main = $(".app-main");
-  main.addEventListener("touchstart", e => {
+  document.addEventListener("touchstart", e => {
     _mx = e.changedTouches[0].clientX; _my = e.changedTouches[0].clientY; _mt = e.target;
   }, { passive: true });
-  main.addEventListener("touchend", e => {
+  document.addEventListener("touchend", e => {
     if (_mx === null) return;
     const dx = e.changedTouches[0].clientX - _mx, dy = e.changedTouches[0].clientY - _my;
-    const startedInGrid = _mt && _mt.closest && _mt.closest("#calGrid");
-    _mx = _my = _mt = null;
-    if (startedInGrid) return; // o grid do calendário tem o próprio swipe (troca mês)
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) {
+    const t = _mt; _mx = _my = _mt = null;
+    if (!t || !t.closest) return;
+    // não troca de guia em: modais, nav, tela de login e o campo das datas do calendário
+    if (t.closest(".modal-overlay") || t.closest(".bottom-nav") || t.closest("#calGrid") || !$("#auth").hidden) return;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) {
       const cur = order.indexOf(activeView);
       const next = Math.max(0, Math.min(order.length - 1, cur + (dx < 0 ? 1 : -1)));
       if (next !== cur) switchView(order[next]);

@@ -416,6 +416,9 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 
 /* picker de semestre */
 .picker-list { display: flex; flex-direction: column; gap: 8px; }
+.picker-row { display: flex; gap: 8px; align-items: stretch; }
+.picker-row .picker-item { flex: 1; }
+.picker-edit { flex-shrink: 0; align-self: center; }
 .picker-item {
   display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
   background: var(--surface); border: 1px solid var(--border);
@@ -450,9 +453,10 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 /* guia Matérias — agrupado por dia */
 .day-block { margin-bottom: 18px; }
 .day-title {
-  font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;
-  color: var(--faint); font-weight: 700; margin-bottom: 9px; padding-left: 2px;
+  font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text); font-weight: 800; margin: 4px 0 10px; padding-left: 2px;
 }
+.day-block + .day-block .day-title { margin-top: 14px; }
 .matter-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 13px 14px 13px 16px; margin-bottom: 8px;
