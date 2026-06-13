@@ -11,14 +11,39 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const M87Cloud = (() => {
   let client = null;
 
+  function configured() { return !!(SUPABASE_URL && SUPABASE_ANON_KEY); }
   function enabled() {
-    return !!(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
+    return !!(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase && window.supabase.createClient);
   }
   function getClient() {
     if (!client && enabled()) {
       client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
     return client;
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = src; s.onload = () => resolve(); s.onerror = () => reject(new Error(src));
+      document.head.appendChild(s);
+    });
+  }
+  // garante que a biblioteca do Supabase carregou (tenta UMD; se falhar, usa ESM)
+  async function ensureLib() {
+    if (window.supabase && window.supabase.createClient) return true;
+    const umd = [
+      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js",
+      "https://unpkg.com/@supabase/supabase-js@2",
+    ];
+    for (const url of umd) {
+      try { await loadScript(url); if (window.supabase && window.supabase.createClient) return true; } catch (e) {}
+    }
+    try {
+      const mod = await import("https://esm.sh/@supabase/supabase-js@2");
+      if (mod && mod.createClient) { window.supabase = mod; return true; }
+    } catch (e) {}
+    return !!(window.supabase && window.supabase.createClient);
   }
 
   async function getSession() {
@@ -73,6 +98,11 @@ const M87Cloud = (() => {
     const { error } = await getClient().from("app_data").delete().eq("user_id", userId);
     if (error) throw error;
   }
+  // remove a própria conta do Auth (precisa da função delete_user criada no banco)
+  async function deleteAccount() {
+    const { error } = await getClient().rpc("delete_user");
+    if (error) throw error;
+  }
 
   /* tempo real: avisa quando a linha do usuário muda (de outro aparelho) */
   function subscribe(userId, cb) {
@@ -86,8 +116,9 @@ const M87Cloud = (() => {
   }
 
   return {
-    enabled, getSession, onAuthChange,
+    configured, enabled, ensureLib, getSession, onAuthChange,
     signIn, signUp, resetPassword, updatePassword, signOut,
-    loadData, saveData, deleteData, subscribe,
+    loadData, saveData, deleteData, deleteAccount, subscribe,
   };
 })();
+window.M87Cloud = M87Cloud;

@@ -450,13 +450,17 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .account-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
 #accountModal .wipe-btn { width: 100%; margin-top: 10px; }
 
-/* guia Matérias — agrupado por dia */
-.day-block { margin-bottom: 18px; }
-.day-title {
-  font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px;
-  color: var(--text); font-weight: 800; margin: 4px 0 10px; padding-left: 2px;
+/* guia Matérias — agrupado por dia (card mais escuro envolvendo o dia) */
+.day-block {
+  margin-bottom: 16px; padding: 12px 12px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
-.day-block + .day-block .day-title { margin-top: 14px; }
+.day-block .matter-card:last-child { margin-bottom: 0; }
+.day-title {
+  font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--muted); font-weight: 800; margin: 2px 2px 10px; padding-left: 2px;
+}
 .matter-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 13px 14px 13px 16px; margin-bottom: 8px;
@@ -496,23 +500,6 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .sem-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .icon-btn-sm { width: 34px; height: 34px; border-radius: 9px; }
 .sem-del { color: var(--danger); }
-
-/* Lembrete de backup */
-.backup-reminder {
-  position: fixed; left: 12px; right: 12px;
-  bottom: calc(150px + var(--safe-area-b));
-  z-index: 40;
-  max-width: 520px; margin: 0 auto;
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  border-radius: 14px;
-  padding: 12px 14px;
-  display: flex; flex-direction: column; gap: 10px;
-  box-shadow: var(--shadow);
-  animation: slideup .25s ease;
-}
-.br-text { font-size: 13px; color: var(--text); line-height: 1.35; }
-.br-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 /* Toast */
 .toast {
@@ -617,28 +604,136 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 @keyframes authPop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
 @keyframes authRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
+/* ===================== Indicador de conexão ===================== */
+.conn-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; margin-right: auto;
+  background: var(--faint);
+}
+.conn-dot.online {
+  background: var(--safe);
+  animation: connPulse 2.2s ease-out infinite;
+}
+@keyframes connPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(37, 208, 164, 0.5); }
+  70%  { box-shadow: 0 0 0 7px rgba(37, 208, 164, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 208, 164, 0); }
+}
+.conn-dot.saving {
+  background: var(--warn);
+  box-shadow: 0 0 8px rgba(255, 176, 46, 0.55);
+  animation: connBlink 0.9s ease-in-out infinite;
+}
+@keyframes connBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.conn-dot.offline {
+  background: var(--danger);
+  box-shadow: 0 0 8px rgba(255, 90, 54, 0.6);
+}
+
+/* Barra de aviso "sem conexão" */
+.offline-bar {
+  position: fixed; left: 12px; right: 12px;
+  bottom: calc(86px + var(--safe-area-b));
+  z-index: 61;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: linear-gradient(135deg, #2a0d08, #3a120c);
+  border: 1px solid rgba(255, 90, 54, 0.4);
+  color: #ffd9cf;
+  border-radius: 14px; padding: 12px 14px;
+  font-size: 13.5px; box-shadow: var(--shadow);
+}
+.offline-bar button { flex-shrink: 0; }
+
+/* Confirmação sempre acima dos outros modais + botão desabilitado */
+#confirmModal { z-index: 70; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Seletor de idioma (Ajustes) */
+.lang-seg { display: flex; gap: 8px; flex-wrap: wrap; }
+.lang-btn {
+  flex: 1 1 auto; min-width: 92px;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-2); border-radius: 10px;
+  padding: 10px 12px; font-size: 13.5px; font-weight: 600;
+  cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+}
+.lang-btn.active { border-color: var(--accent); background: var(--surface-2); color: var(--accent-2); }
+
 /* ===================== DESKTOP (nav lateral) ===================== */
 .nav-logo { display: none; }
+.nav-collapse { display: none; }
 @media (min-width: 880px) {
   body { padding-bottom: 40px; }
 
   .bottom-nav {
     flex-direction: column; justify-content: flex-start; gap: 6px;
-    top: 0; bottom: 0; left: 0; right: auto; width: 96px; height: 100vh;
+    top: 0; bottom: 0; left: 0; right: auto; width: 212px; height: 100vh;
     border-top: none; border-right: 1px solid var(--border);
-    padding: calc(18px + env(safe-area-inset-top, 0px)) 0 18px;
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 0 18px;
   }
-  .nav-logo { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 16px; }
-  .nav-logo img { width: 40px; height: 40px; border-radius: 11px; box-shadow: 0 0 18px var(--accent-glow); }
-  .nav-logo span { font-size: 12.5px; font-weight: 700; letter-spacing: 2px; color: var(--text); }
-  .nav-btn { flex: none; margin: 0 8px; padding: 12px 2px; border-radius: 12px; transition: background .15s, color .15s; }
+  .nav-logo {
+    display: flex; flex-direction: row; align-items: center; gap: 13px;
+    margin: 0 18px 20px; padding: 2px 4px;
+  }
+  .nav-logo img { width: 38px; height: 38px; border-radius: 11px; box-shadow: 0 0 18px var(--accent-glow); }
+  .nav-logo span { font-size: 18px; font-weight: 800; letter-spacing: 3px; color: var(--text); }
+
+  .nav-btn {
+    flex: none; flex-direction: row; align-items: center; justify-content: flex-start;
+    gap: 15px; margin: 0 12px; padding: 13px 16px;
+    border-radius: 13px; font-size: 14.5px; font-weight: 600;
+    transition: background .15s, color .15s;
+  }
+  .nav-btn svg { width: 25px; height: 25px; }
   .nav-btn.active { background: var(--surface); }
 
-  .app-header { margin-left: 96px; justify-content: flex-end; }
+  .app-header { margin-left: 212px; justify-content: flex-end; }
   .app-header .brand { display: none; }
-  .app-main { margin-left: max(96px, calc((100% - 900px) / 2)); margin-right: auto; max-width: 900px; padding: 24px 28px; }
+  .conn-dot { margin-right: 12px; }
+  .app-main { margin-left: max(212px, calc((100% - 900px) / 2)); margin-right: auto; max-width: 900px; padding: 24px 30px; }
   .fab { right: 26px; bottom: 26px; }
-  .backup-reminder { left: calc(96px + 12px); right: 12px; max-width: 520px; }
+  .offline-bar { left: calc(212px + 14px); right: 14px; max-width: 560px; }
+
+  /* botão recolher/expandir o menu lateral */
+  .nav-collapse {
+    display: flex; align-items: center; justify-content: center;
+    margin: auto 12px 0; padding: 11px; border: none; cursor: pointer;
+    background: none; color: var(--faint); border-radius: 12px;
+    transition: background .15s, color .15s;
+  }
+  .nav-collapse:hover { background: var(--surface); color: var(--text); }
+  .nav-collapse svg { transition: transform .2s; }
+
+  /* ----- estado recolhido: só ícones ----- */
+  .nav-collapsed .bottom-nav { width: 72px; }
+  .nav-collapsed .nav-logo { justify-content: center; margin: 0 0 20px; gap: 0; }
+  .nav-collapsed .nav-logo span { display: none; }
+  .nav-collapsed .nav-btn { justify-content: center; gap: 0; margin: 0 10px; padding: 13px 0; }
+  .nav-collapsed .nav-btn span { display: none; }
+  .nav-collapsed .nav-collapse svg { transform: rotate(180deg); }
+  .nav-collapsed .app-header { margin-left: 72px; }
+  .nav-collapsed .app-main { margin-left: max(72px, calc((100% - 900px) / 2)); }
+  .nav-collapsed .offline-bar { left: calc(72px + 14px); }
+}
+
+/* Monitores grandes: duas colunas (grade à esquerda, lista/resumo à direita) */
+@media (min-width: 1180px) {
+  .app-main { max-width: 1080px; }
+
+  #view-subjects.active {
+    display: grid; grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 26px; align-items: start;
+  }
+  #view-subjects .manage-section { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+  #view-dashboard.active {
+    display: grid; gap: 26px; align-items: start;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    grid-template-areas: "banner banner" "grid summary";
+  }
+  #semesterBanner   { grid-area: banner; }
+  #dashboardGrid    { grid-area: grid; }
+  #semesterSummary  { grid-area: summary; margin-top: 0; }
 }
 
 [hidden] { display: none !important; }

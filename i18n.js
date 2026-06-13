@@ -1,0 +1,636 @@
+/* ============================================================
+   M87 — Internacionalização (Português / Inglês / Espanhol)
+   Detecta o idioma do sistema na 1ª vez (pt-PT cai em pt-BR;
+   qualquer idioma fora de pt/es cai em inglês).
+   ============================================================ */
+const I18N = {
+  pt: {
+    /* Auth */
+    "auth.email_ph": "E-mail institucional USP",
+    "auth.user_ph": "Nome de usuário",
+    "auth.pass_ph": "Senha",
+    "auth.enter": "Entrar",
+    "auth.create": "Criar conta",
+    "auth.have": "Já tenho conta",
+    "auth.forgot": "Esqueci a senha",
+    "auth.fill": "Preencha e-mail e senha.",
+    "auth.pass_min": "A senha precisa ter ao menos 6 caracteres.",
+    "auth.wait": "Aguarde…",
+    "auth.choose_user": "Escolha um nome de usuário.",
+    "auth.usp_only": "Use seu e-mail institucional da USP (@usp.br).",
+    "auth.exists": "Já existe uma conta com este e-mail. Faça login ou use “Esqueci a senha”.",
+    "auth.created": "Conta criada! Confirme pelo link enviado ao seu e-mail e depois entre.",
+    "auth.forgot_need_email": "Digite seu e-mail para recuperar a senha.",
+    "auth.forgot_sent": "Enviamos um link de recuperação para o seu e-mail.",
+    "auth.rate": "Muitas tentativas. Aguarde alguns minutos antes de pedir outro e-mail.",
+    "auth.invalid": "E-mail ou senha incorretos.",
+    "auth.not_confirmed": "Confirme seu e-mail antes de entrar.",
+    "auth.generic": "Algo deu errado. Tente novamente.",
+    "auth.lib_fail": "Não foi possível carregar o serviço de login. Verifique a conexão e recarregue a página.",
+    "auth.new_pass": "Defina a nova senha (mínimo 6 caracteres):",
+    "auth.pass_updated": "Senha atualizada! Entre com a nova senha.",
+    "auth.pass_too_short": "Senha muito curta.",
+    "auth.save": "Salvar",
+    "auth.new_pass_ph": "Nova senha",
+
+    /* Nav */
+    "nav.subjects": "Matérias",
+    "nav.dashboard": "Faltas",
+    "nav.calendar": "Calendário",
+    "nav.settings": "Ajustes",
+    "nav.collapse": "Recolher menu",
+    "nav.expand": "Expandir menu",
+
+    /* Header */
+    "header.no_semester": "Sem semestre",
+    "header.conn": "Conexão",
+    "header.change_sem": "Trocar semestre",
+
+    /* Subjects */
+    "subjects.list": "Lista de matérias",
+    "subjects.new": "+ Nova matéria",
+    "subjects.none_scheduled": "Nenhuma matéria com horário cadastrado neste semestre. Adicione abaixo.",
+    "subjects.none_yet": "Nenhuma matéria ainda.",
+    "subjects.no_name": "(sem nome)",
+    "subjects.no_schedule": "sem horário definido",
+    "subjects.meta": "{credits} créditos · {meetings}",
+
+    /* Dashboard */
+    "dash.no_semester": "Nenhum semestre ainda.<br/>Toque no seletor de semestre (no topo) para criar um.",
+    "dash.subjects_one": "{n} matéria",
+    "dash.subjects_other": "{n} matérias",
+    "dash.no_subjects": "Nenhuma matéria neste semestre.<br/>Vá na guia <b>Matérias</b> e toque em <b>+ Nova matéria</b>.",
+    "dash.faltas": "Faltas",
+    "dash.can_miss": "Pode faltar mais {n}",
+    "dash.no_margin": "Sem margem",
+    "dash.alert_one": "Só pode faltar mais 1",
+    "dash.alert_reached": "Limite de faltas atingido",
+    "dash.alert_over": "Limite ultrapassado em {n}",
+
+    /* Summary */
+    "sum.title": "Resumo do semestre",
+    "sum.credits_faltas": "{c} créditos · {u}/{m} faltas",
+    "sum.remaining": "Aulas restantes por matéria",
+    "sum.classes_one": "{n} aula",
+    "sum.classes_other": "{n} aulas",
+
+    /* Notify */
+    "notify.one_left_title": "Só pode faltar mais 1 dia",
+    "notify.none_left_title": "Não pode faltar mais",
+
+    /* Calendar */
+    "cal.today": "Hoje",
+    "cal.prev": "Mês anterior",
+    "cal.next": "Próximo mês",
+    "cal.legend_falta": "Falta",
+    "cal.legend_prof": "Prof. faltou",
+    "cal.legend_holiday": "Feriado",
+    "cal.legend_noclass": "Sem aula",
+    "cal.changed_to": "Mudou para {label}",
+
+    /* Day modal */
+    "day.title_default": "Registrar ocorrência",
+    "day.date": "Data",
+    "day.note": "Observação (opcional)",
+    "day.note_ph": "ex: consulta médica",
+    "day.holiday": "Feriado",
+    "day.noclass": "Sem aula",
+    "day.clear": "Limpar dia",
+    "day.cancel": "Cancelar",
+    "day.save": "Salvar",
+    "day.no_classes": "Sem aulas cadastradas neste dia. Você ainda pode marcá-lo como feriado/sem aula abaixo.",
+    "day.present": "Presente",
+    "day.absent": "Falta",
+    "day.prof_absent": "Prof. faltou",
+    "day.saved": "Salvo ✓",
+    "day.cleared": "Dia limpo ✓",
+
+    /* Shifts / slots */
+    "shift.morning": "Manhã",
+    "shift.afternoon": "Tarde",
+    "shift.evening": "Noite",
+    "slot.first": "1ª aula",
+    "slot.second": "2ª aula",
+    "slot.full": "Integral",
+    "slot.custom": "Personalizado",
+
+    /* Subject modal */
+    "subj.title": "Matéria",
+    "subj.edit": "Editar matéria",
+    "subj.new": "Nova matéria",
+    "subj.name": "Nome da matéria *",
+    "subj.name_ph": "ex: Matemática Financeira",
+    "subj.prof": "Professor(a)",
+    "subj.prof_ph": "Nome do docente",
+    "subj.email": "E-mail USP do professor",
+    "subj.credits": "Créditos",
+    "subj.credits2": "2 créditos (máx. 4 faltas)",
+    "subj.credits4": "4 créditos (máx. 8 faltas)",
+    "subj.color": "Cor",
+    "subj.schedule": "Horários",
+    "subj.add_meeting": "+ Adicionar horário",
+    "subj.delete": "Excluir",
+    "subj.custom_opt": "Personalizado…",
+    "subj.room_ph": "Sala (ex: 01-B2, LEIA 1)",
+    "subj.name_required": "Dê um nome à matéria.",
+    "subj.saved": "Matéria salva ✓",
+    "subj.create_sem_first": "Crie um semestre primeiro.",
+    "subj.limit": "Limite de 14 matérias por semestre.",
+    "subj.delete_confirm": "Excluir esta matéria? As faltas dela serão desconsideradas.",
+    "subj.remove_meeting": "Remover",
+
+    /* Semester */
+    "sem.title": "Semestre",
+    "sem.new": "Novo semestre",
+    "sem.edit": "Editar semestre",
+    "sem.welcome": "Olá, {name}! Qual seu semestre?",
+    "sem.label": "Semestre",
+    "sem.period": "Período",
+    "sem.period_feb": "Fevereiro – Junho",
+    "sem.period_aug": "Agosto – Dezembro",
+    "sem.period_feb_short": "Fev - Jun",
+    "sem.period_aug_short": "Ago - Dez",
+    "sem.year": "Ano",
+    "sem.nth": "{n}º Semestre",
+    "sem.cancel": "Cancelar",
+    "sem.save": "Salvar",
+    "sem.delete": "Excluir",
+    "sem.limit": "Limite de 18 semestres.",
+    "sem.updated": "Semestre atualizado ✓",
+    "sem.created": "Semestre criado ✓",
+    "sem.deleted": "Semestre excluído",
+    "sem.delete_confirm": "Excluir \"{label}\" e todas as faltas dele? Não pode ser desfeito.",
+    "sem.new_semester": "+ Novo semestre",
+    "sem.edit_aria": "Editar semestre",
+
+    /* Settings */
+    "set.about": "Sobre",
+    "set.about_btn": "Sobre o aplicativo",
+    "set.language": "Idioma",
+    "set.account": "Conta",
+    "set.account_sub": "Toque para gerenciar a conta",
+
+    /* Account modal */
+    "acc.title": "Conta",
+    "acc.logout": "Sair da conta",
+    "acc.wipe": "Apagar todos os dados",
+    "acc.delete": "Excluir conta",
+    "acc.logout_confirm": "Sair da conta? Seus dados continuam salvos na nuvem.",
+    "acc.logout_yes": "Sair",
+    "acc.wipe_confirm": "Apagar TODOS os dados (matérias, faltas, semestres)? Não pode ser desfeito.",
+    "acc.wipe_yes": "Apagar tudo",
+    "acc.wiped": "Dados apagados.",
+    "acc.delete_confirm": "Excluir a conta apaga TODOS os seus dados da nuvem. Não pode ser desfeito.",
+    "acc.delete_yes": "Excluir conta",
+    "acc.deleted": "Conta excluída. Para usar este e-mail de novo, crie uma nova conta.",
+    "acc.delete_partial": "Dados apagados, mas não foi possível remover o login (rode a função delete_user no Supabase).",
+
+    /* Confirm */
+    "confirm.title": "Confirmar",
+    "confirm.cancel": "Cancelar",
+    "confirm.yes": "Confirmar",
+
+    /* About */
+    "about.title": "Sobre",
+    "about.project": "Projeto M87",
+    "about.made_with": "Desenvolvido com",
+    "about.made_by": "por",
+    "about.changelog":
+      "Novidades 0.9:\n   Sincronização em tempo real entre aparelhos\n   Indicador de conexão (online/instável/offline)\n   Idiomas: português, inglês e espanhol\n   Layout desktop em duas colunas com menu recolhível\n   Cards por dia agrupando as matérias\n   Confirmações com contagem regressiva\n\nNovidades 0.8:\n   Login com e-mail USP e dados na nuvem\n   Guia Matérias (info por dia, sala, professor)\n   Criação guiada de semestres (até 18)\n   Horários: manhã, tarde, noite, integral e personalizado\n   Resumo com total de créditos\n",
+
+    /* Misc */
+    "misc.copied_email": "E-mail copiado ✓",
+    "misc.offline": "Sem conexão com a rede.",
+    "misc.offline_bar": "Sem conexão com a rede — alterações desativadas.",
+    "misc.retry": "Tentar novamente",
+    "misc.updated_other": "Atualizado de outro aparelho ⟳",
+    "misc.lang_changed": "Idioma alterado ✓",
+    "misc.close": "Fechar",
+  },
+
+  en: {
+    "auth.email_ph": "Institutional USP e-mail",
+    "auth.user_ph": "Username",
+    "auth.pass_ph": "Password",
+    "auth.enter": "Sign in",
+    "auth.create": "Create account",
+    "auth.have": "I already have an account",
+    "auth.forgot": "Forgot password",
+    "auth.fill": "Fill in e-mail and password.",
+    "auth.pass_min": "Password must be at least 6 characters.",
+    "auth.wait": "Please wait…",
+    "auth.choose_user": "Choose a username.",
+    "auth.usp_only": "Use your institutional USP e-mail (@usp.br).",
+    "auth.exists": "An account with this e-mail already exists. Sign in or use “Forgot password”.",
+    "auth.created": "Account created! Confirm via the link sent to your e-mail, then sign in.",
+    "auth.forgot_need_email": "Type your e-mail to recover the password.",
+    "auth.forgot_sent": "We sent a recovery link to your e-mail.",
+    "auth.rate": "Too many attempts. Wait a few minutes before requesting another e-mail.",
+    "auth.invalid": "Incorrect e-mail or password.",
+    "auth.not_confirmed": "Confirm your e-mail before signing in.",
+    "auth.generic": "Something went wrong. Please try again.",
+    "auth.lib_fail": "Could not load the login service. Check your connection and reload the page.",
+    "auth.new_pass": "Set the new password (minimum 6 characters):",
+    "auth.pass_updated": "Password updated! Sign in with the new password.",
+    "auth.pass_too_short": "Password too short.",
+    "auth.save": "Save",
+    "auth.new_pass_ph": "New password",
+
+    "nav.subjects": "Subjects",
+    "nav.dashboard": "Absences",
+    "nav.calendar": "Calendar",
+    "nav.settings": "Settings",
+    "nav.collapse": "Collapse menu",
+    "nav.expand": "Expand menu",
+
+    "header.no_semester": "No semester",
+    "header.conn": "Connection",
+    "header.change_sem": "Change semester",
+
+    "subjects.list": "Subject list",
+    "subjects.new": "+ New subject",
+    "subjects.none_scheduled": "No subject has a schedule set this semester. Add one below.",
+    "subjects.none_yet": "No subjects yet.",
+    "subjects.no_name": "(no name)",
+    "subjects.no_schedule": "no schedule set",
+    "subjects.meta": "{credits} credits · {meetings}",
+
+    "dash.no_semester": "No semester yet.<br/>Tap the semester selector (at the top) to create one.",
+    "dash.subjects_one": "{n} subject",
+    "dash.subjects_other": "{n} subjects",
+    "dash.no_subjects": "No subjects this semester.<br/>Go to the <b>Subjects</b> tab and tap <b>+ New subject</b>.",
+    "dash.faltas": "Absences",
+    "dash.can_miss": "{n} more absence(s) allowed",
+    "dash.no_margin": "No margin left",
+    "dash.alert_one": "Only 1 absence left",
+    "dash.alert_reached": "Absence limit reached",
+    "dash.alert_over": "Limit exceeded by {n}",
+
+    "sum.title": "Semester summary",
+    "sum.credits_faltas": "{c} credits · {u}/{m} absences",
+    "sum.remaining": "Remaining classes per subject",
+    "sum.classes_one": "{n} class",
+    "sum.classes_other": "{n} classes",
+
+    "notify.one_left_title": "Only 1 absence left",
+    "notify.none_left_title": "No absences left",
+
+    "cal.today": "Today",
+    "cal.prev": "Previous month",
+    "cal.next": "Next month",
+    "cal.legend_falta": "Absence",
+    "cal.legend_prof": "Professor absent",
+    "cal.legend_holiday": "Holiday",
+    "cal.legend_noclass": "No class",
+    "cal.changed_to": "Switched to {label}",
+
+    "day.title_default": "Log entry",
+    "day.date": "Date",
+    "day.note": "Note (optional)",
+    "day.note_ph": "e.g. doctor appointment",
+    "day.holiday": "Holiday",
+    "day.noclass": "No class",
+    "day.clear": "Clear day",
+    "day.cancel": "Cancel",
+    "day.save": "Save",
+    "day.no_classes": "No classes registered on this day. You can still mark it as holiday / no class below.",
+    "day.present": "Present",
+    "day.absent": "Absent",
+    "day.prof_absent": "Professor absent",
+    "day.saved": "Saved ✓",
+    "day.cleared": "Day cleared ✓",
+
+    "shift.morning": "Morning",
+    "shift.afternoon": "Afternoon",
+    "shift.evening": "Evening",
+    "slot.first": "1st class",
+    "slot.second": "2nd class",
+    "slot.full": "Full-time",
+    "slot.custom": "Custom",
+
+    "subj.title": "Subject",
+    "subj.edit": "Edit subject",
+    "subj.new": "New subject",
+    "subj.name": "Subject name *",
+    "subj.name_ph": "e.g. Financial Mathematics",
+    "subj.prof": "Professor",
+    "subj.prof_ph": "Teacher name",
+    "subj.email": "Professor's USP e-mail",
+    "subj.credits": "Credits",
+    "subj.credits2": "2 credits (max. 4 absences)",
+    "subj.credits4": "4 credits (max. 8 absences)",
+    "subj.color": "Color",
+    "subj.schedule": "Schedule",
+    "subj.add_meeting": "+ Add time",
+    "subj.delete": "Delete",
+    "subj.custom_opt": "Custom…",
+    "subj.room_ph": "Room (e.g. 01-B2, LEIA 1)",
+    "subj.name_required": "Give the subject a name.",
+    "subj.saved": "Subject saved ✓",
+    "subj.create_sem_first": "Create a semester first.",
+    "subj.limit": "Limit of 14 subjects per semester.",
+    "subj.delete_confirm": "Delete this subject? Its absences will be disregarded.",
+    "subj.remove_meeting": "Remove",
+
+    "sem.title": "Semester",
+    "sem.new": "New semester",
+    "sem.edit": "Edit semester",
+    "sem.welcome": "Hi, {name}! Which semester are you in?",
+    "sem.label": "Semester",
+    "sem.period": "Period",
+    "sem.period_feb": "February – June",
+    "sem.period_aug": "August – December",
+    "sem.period_feb_short": "Feb - Jun",
+    "sem.period_aug_short": "Aug - Dec",
+    "sem.year": "Year",
+    "sem.nth": "Semester {n}",
+    "sem.cancel": "Cancel",
+    "sem.save": "Save",
+    "sem.delete": "Delete",
+    "sem.limit": "Limit of 18 semesters.",
+    "sem.updated": "Semester updated ✓",
+    "sem.created": "Semester created ✓",
+    "sem.deleted": "Semester deleted",
+    "sem.delete_confirm": "Delete \"{label}\" and all its absences? This cannot be undone.",
+    "sem.new_semester": "+ New semester",
+    "sem.edit_aria": "Edit semester",
+
+    "set.about": "About",
+    "set.about_btn": "About the app",
+    "set.language": "Language",
+    "set.account": "Account",
+    "set.account_sub": "Tap to manage your account",
+
+    "acc.title": "Account",
+    "acc.logout": "Sign out",
+    "acc.wipe": "Erase all data",
+    "acc.delete": "Delete account",
+    "acc.logout_confirm": "Sign out? Your data stays saved in the cloud.",
+    "acc.logout_yes": "Sign out",
+    "acc.wipe_confirm": "Erase ALL data (subjects, absences, semesters)? This cannot be undone.",
+    "acc.wipe_yes": "Erase all",
+    "acc.wiped": "Data erased.",
+    "acc.delete_confirm": "Deleting the account erases ALL your cloud data. This cannot be undone.",
+    "acc.delete_yes": "Delete account",
+    "acc.deleted": "Account deleted. To use this e-mail again, create a new account.",
+    "acc.delete_partial": "Data erased, but the login could not be removed (run the delete_user function in Supabase).",
+
+    "confirm.title": "Confirm",
+    "confirm.cancel": "Cancel",
+    "confirm.yes": "Confirm",
+
+    "about.title": "About",
+    "about.project": "Project M87",
+    "about.made_with": "Built with",
+    "about.made_by": "by",
+    "about.changelog":
+      "What's new in 0.9:\n   Real-time sync across devices\n   Connection indicator (online/unstable/offline)\n   Languages: Portuguese, English and Spanish\n   Two-column desktop layout with collapsible menu\n   Per-day cards grouping subjects\n   Confirmations with countdown\n\nWhat's new in 0.8:\n   Login with USP e-mail and cloud data\n   Subjects tab (info per day, room, professor)\n   Guided semester creation (up to 18)\n   Time slots: morning, afternoon, evening, full-time and custom\n   Summary with total credits\n",
+
+    "misc.copied_email": "E-mail copied ✓",
+    "misc.offline": "No network connection.",
+    "misc.offline_bar": "No network connection — editing disabled.",
+    "misc.retry": "Try again",
+    "misc.updated_other": "Updated from another device ⟳",
+    "misc.lang_changed": "Language changed ✓",
+    "misc.close": "Close",
+  },
+
+  es: {
+    "auth.email_ph": "Correo institucional USP",
+    "auth.user_ph": "Nombre de usuario",
+    "auth.pass_ph": "Contraseña",
+    "auth.enter": "Entrar",
+    "auth.create": "Crear cuenta",
+    "auth.have": "Ya tengo cuenta",
+    "auth.forgot": "Olvidé mi contraseña",
+    "auth.fill": "Completa correo y contraseña.",
+    "auth.pass_min": "La contraseña debe tener al menos 6 caracteres.",
+    "auth.wait": "Espera…",
+    "auth.choose_user": "Elige un nombre de usuario.",
+    "auth.usp_only": "Usa tu correo institucional de la USP (@usp.br).",
+    "auth.exists": "Ya existe una cuenta con este correo. Inicia sesión o usa “Olvidé mi contraseña”.",
+    "auth.created": "¡Cuenta creada! Confirma con el enlace enviado a tu correo y luego entra.",
+    "auth.forgot_need_email": "Escribe tu correo para recuperar la contraseña.",
+    "auth.forgot_sent": "Enviamos un enlace de recuperación a tu correo.",
+    "auth.rate": "Demasiados intentos. Espera unos minutos antes de pedir otro correo.",
+    "auth.invalid": "Correo o contraseña incorrectos.",
+    "auth.not_confirmed": "Confirma tu correo antes de entrar.",
+    "auth.generic": "Algo salió mal. Inténtalo de nuevo.",
+    "auth.lib_fail": "No se pudo cargar el servicio de inicio de sesión. Revisa la conexión y recarga la página.",
+    "auth.new_pass": "Define la nueva contraseña (mínimo 6 caracteres):",
+    "auth.pass_updated": "¡Contraseña actualizada! Entra con la nueva contraseña.",
+    "auth.pass_too_short": "Contraseña demasiado corta.",
+    "auth.save": "Guardar",
+    "auth.new_pass_ph": "Nueva contraseña",
+
+    "nav.subjects": "Materias",
+    "nav.dashboard": "Faltas",
+    "nav.calendar": "Calendario",
+    "nav.settings": "Ajustes",
+    "nav.collapse": "Contraer menú",
+    "nav.expand": "Expandir menú",
+
+    "header.no_semester": "Sin semestre",
+    "header.conn": "Conexión",
+    "header.change_sem": "Cambiar semestre",
+
+    "subjects.list": "Lista de materias",
+    "subjects.new": "+ Nueva materia",
+    "subjects.none_scheduled": "Ninguna materia tiene horario en este semestre. Agrega una abajo.",
+    "subjects.none_yet": "Aún no hay materias.",
+    "subjects.no_name": "(sin nombre)",
+    "subjects.no_schedule": "sin horario definido",
+    "subjects.meta": "{credits} créditos · {meetings}",
+
+    "dash.no_semester": "Aún no hay semestre.<br/>Toca el selector de semestre (arriba) para crear uno.",
+    "dash.subjects_one": "{n} materia",
+    "dash.subjects_other": "{n} materias",
+    "dash.no_subjects": "Ninguna materia en este semestre.<br/>Ve a la pestaña <b>Materias</b> y toca <b>+ Nueva materia</b>.",
+    "dash.faltas": "Faltas",
+    "dash.can_miss": "Puedes faltar {n} más",
+    "dash.no_margin": "Sin margen",
+    "dash.alert_one": "Solo puedes faltar 1 vez más",
+    "dash.alert_reached": "Límite de faltas alcanzado",
+    "dash.alert_over": "Límite superado por {n}",
+
+    "sum.title": "Resumen del semestre",
+    "sum.credits_faltas": "{c} créditos · {u}/{m} faltas",
+    "sum.remaining": "Clases restantes por materia",
+    "sum.classes_one": "{n} clase",
+    "sum.classes_other": "{n} clases",
+
+    "notify.one_left_title": "Solo puedes faltar 1 día más",
+    "notify.none_left_title": "No puedes faltar más",
+
+    "cal.today": "Hoy",
+    "cal.prev": "Mes anterior",
+    "cal.next": "Mes siguiente",
+    "cal.legend_falta": "Falta",
+    "cal.legend_prof": "Profesor faltó",
+    "cal.legend_holiday": "Feriado",
+    "cal.legend_noclass": "Sin clase",
+    "cal.changed_to": "Cambiado a {label}",
+
+    "day.title_default": "Registrar",
+    "day.date": "Fecha",
+    "day.note": "Observación (opcional)",
+    "day.note_ph": "ej: cita médica",
+    "day.holiday": "Feriado",
+    "day.noclass": "Sin clase",
+    "day.clear": "Limpiar día",
+    "day.cancel": "Cancelar",
+    "day.save": "Guardar",
+    "day.no_classes": "No hay clases registradas este día. Aún puedes marcarlo como feriado / sin clase abajo.",
+    "day.present": "Presente",
+    "day.absent": "Falta",
+    "day.prof_absent": "Profesor faltó",
+    "day.saved": "Guardado ✓",
+    "day.cleared": "Día limpiado ✓",
+
+    "shift.morning": "Mañana",
+    "shift.afternoon": "Tarde",
+    "shift.evening": "Noche",
+    "slot.first": "1ª clase",
+    "slot.second": "2ª clase",
+    "slot.full": "Completo",
+    "slot.custom": "Personalizado",
+
+    "subj.title": "Materia",
+    "subj.edit": "Editar materia",
+    "subj.new": "Nueva materia",
+    "subj.name": "Nombre de la materia *",
+    "subj.name_ph": "ej: Matemática Financiera",
+    "subj.prof": "Profesor(a)",
+    "subj.prof_ph": "Nombre del docente",
+    "subj.email": "Correo USP del profesor",
+    "subj.credits": "Créditos",
+    "subj.credits2": "2 créditos (máx. 4 faltas)",
+    "subj.credits4": "4 créditos (máx. 8 faltas)",
+    "subj.color": "Color",
+    "subj.schedule": "Horarios",
+    "subj.add_meeting": "+ Añadir horario",
+    "subj.delete": "Eliminar",
+    "subj.custom_opt": "Personalizado…",
+    "subj.room_ph": "Sala (ej: 01-B2, LEIA 1)",
+    "subj.name_required": "Dale un nombre a la materia.",
+    "subj.saved": "Materia guardada ✓",
+    "subj.create_sem_first": "Crea un semestre primero.",
+    "subj.limit": "Límite de 14 materias por semestre.",
+    "subj.delete_confirm": "¿Eliminar esta materia? Sus faltas serán descartadas.",
+    "subj.remove_meeting": "Quitar",
+
+    "sem.title": "Semestre",
+    "sem.new": "Nuevo semestre",
+    "sem.edit": "Editar semestre",
+    "sem.welcome": "¡Hola, {name}! ¿En qué semestre estás?",
+    "sem.label": "Semestre",
+    "sem.period": "Período",
+    "sem.period_feb": "Febrero – Junio",
+    "sem.period_aug": "Agosto – Diciembre",
+    "sem.period_feb_short": "Feb - Jun",
+    "sem.period_aug_short": "Ago - Dic",
+    "sem.year": "Año",
+    "sem.nth": "{n}º Semestre",
+    "sem.cancel": "Cancelar",
+    "sem.save": "Guardar",
+    "sem.delete": "Eliminar",
+    "sem.limit": "Límite de 18 semestres.",
+    "sem.updated": "Semestre actualizado ✓",
+    "sem.created": "Semestre creado ✓",
+    "sem.deleted": "Semestre eliminado",
+    "sem.delete_confirm": "¿Eliminar \"{label}\" y todas sus faltas? No se puede deshacer.",
+    "sem.new_semester": "+ Nuevo semestre",
+    "sem.edit_aria": "Editar semestre",
+
+    "set.about": "Acerca de",
+    "set.about_btn": "Acerca de la app",
+    "set.language": "Idioma",
+    "set.account": "Cuenta",
+    "set.account_sub": "Toca para gestionar tu cuenta",
+
+    "acc.title": "Cuenta",
+    "acc.logout": "Cerrar sesión",
+    "acc.wipe": "Borrar todos los datos",
+    "acc.delete": "Eliminar cuenta",
+    "acc.logout_confirm": "¿Cerrar sesión? Tus datos siguen guardados en la nube.",
+    "acc.logout_yes": "Salir",
+    "acc.wipe_confirm": "¿Borrar TODOS los datos (materias, faltas, semestres)? No se puede deshacer.",
+    "acc.wipe_yes": "Borrar todo",
+    "acc.wiped": "Datos borrados.",
+    "acc.delete_confirm": "Eliminar la cuenta borra TODOS tus datos de la nube. No se puede deshacer.",
+    "acc.delete_yes": "Eliminar cuenta",
+    "acc.deleted": "Cuenta eliminada. Para usar este correo otra vez, crea una nueva cuenta.",
+    "acc.delete_partial": "Datos borrados, pero no se pudo eliminar el inicio de sesión (ejecuta la función delete_user en Supabase).",
+
+    "confirm.title": "Confirmar",
+    "confirm.cancel": "Cancelar",
+    "confirm.yes": "Confirmar",
+
+    "about.title": "Acerca de",
+    "about.project": "Proyecto M87",
+    "about.made_with": "Desarrollado con",
+    "about.made_by": "por",
+    "about.changelog":
+      "Novedades 0.9:\n   Sincronización en tiempo real entre dispositivos\n   Indicador de conexión (en línea/inestable/sin conexión)\n   Idiomas: portugués, inglés y español\n   Diseño de escritorio en dos columnas con menú plegable\n   Tarjetas por día agrupando las materias\n   Confirmaciones con cuenta regresiva\n\nNovedades 0.8:\n   Inicio de sesión con correo USP y datos en la nube\n   Pestaña Materias (info por día, sala, profesor)\n   Creación guiada de semestres (hasta 18)\n   Horarios: mañana, tarde, noche, completo y personalizado\n   Resumen con total de créditos\n",
+
+    "misc.copied_email": "Correo copiado ✓",
+    "misc.offline": "Sin conexión de red.",
+    "misc.offline_bar": "Sin conexión de red — edición desactivada.",
+    "misc.retry": "Reintentar",
+    "misc.updated_other": "Actualizado desde otro dispositivo ⟳",
+    "misc.lang_changed": "Idioma cambiado ✓",
+    "misc.close": "Cerrar",
+  },
+};
+
+function detectLang() {
+  const saved = localStorage.getItem("m87.lang");
+  if (saved && I18N[saved]) return saved;
+  const nav = (navigator.languages && navigator.languages[0]) || navigator.language || "en";
+  const low = nav.toLowerCase();
+  if (low.startsWith("pt")) return "pt";   // inclui pt-PT -> português brasileiro
+  if (low.startsWith("es")) return "es";
+  if (low.startsWith("en")) return "en";
+  return "en";                              // qualquer outro idioma -> inglês
+}
+
+let LANG = detectLang();
+function getLang() { return LANG; }
+function setLang(l) { if (I18N[l]) { LANG = l; localStorage.setItem("m87.lang", l); } }
+function localeTag() { return LANG === "pt" ? "pt-BR" : LANG === "es" ? "es-ES" : "en-US"; }
+
+function t(key, vars) {
+  let s = I18N[LANG] && I18N[LANG][key];
+  if (s == null) s = (I18N.en[key] != null ? I18N.en[key] : key);
+  if (vars) for (const k in vars) s = s.split("{" + k + "}").join(vars[k]);
+  return s;
+}
+function tn(key, n, vars) {
+  return t(key + (n === 1 ? "_one" : "_other"), Object.assign({ n }, vars));
+}
+
+function applyStaticI18n(root = document) {
+  root.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  root.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  root.querySelectorAll("[data-i18n-ph]").forEach(el => { el.setAttribute("placeholder", t(el.dataset.i18nPh)); });
+  root.querySelectorAll("[data-i18n-title]").forEach(el => { el.setAttribute("title", t(el.dataset.i18nTitle)); });
+  root.querySelectorAll("[data-i18n-aria]").forEach(el => { el.setAttribute("aria-label", t(el.dataset.i18nAria)); });
+}
+
+const WEEKDAYS_I18N = {
+  pt: ["", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"],
+  en: ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  es: ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
+};
+const WD_SHORT_I18N = {
+  pt: ["", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+  en: ["", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  es: ["", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+};
+function weekdayName(wd) { return (WEEKDAYS_I18N[LANG] || WEEKDAYS_I18N.en)[wd]; }
+function weekdayShort(wd) { return (WD_SHORT_I18N[LANG] || WD_SHORT_I18N.en)[wd]; }
+
+const _SHIFT_KEYS = { "Manhã": "shift.morning", "Tarde": "shift.afternoon", "Noite": "shift.evening" };
+const _SLOTLABEL_KEYS = { "1ª aula": "slot.first", "2ª aula": "slot.second", "Integral": "slot.full", "Personalizado": "slot.custom" };
+function tShift(s) { return _SHIFT_KEYS[s] ? t(_SHIFT_KEYS[s]) : s; }
+function tSlotLabel(l) { return _SLOTLABEL_KEYS[l] ? t(_SLOTLABEL_KEYS[l]) : l; }

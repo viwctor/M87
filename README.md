@@ -1,60 +1,212 @@
-# M87 - Controle de Faltas
+<div align="center">
 
-M87 é um aplicativo web progressivo (PWA) para controle de frequência acadêmica do
-curso de Administração da FEA-RP/USP (Faculdade de Economia, Administração e
-Contabilidade de Ribeirão Preto, Universidade de São Paulo). Permite registrar faltas
-por matéria e por aula, acompanhar o limite permitido em cada disciplina e visualizar
-o histórico em um calendário. Funciona offline e pode ser instalado no celular
-(Android e iOS) e no computador.
+<img src="icons/icon-192.png" width="96" height="96" alt="M87 logo" />
 
-Acesso: https://viwctor.github.io/m87/
+# M87 · Class Attendance Tracker
 
-## Conteúdo padrão
-O aplicativo já vem com o 3º e o 4º semestres do curso preenchidos, no turno da noite
-(aulas às 19:00 e às 20:50). Todas as matérias, horários, datas e semestres podem ser
-editados, adicionados ou removidos conforme a grade de cada usuário, pelo menu
-Gerenciar. Também há suporte ao turno da manhã (aulas às 08:00 e às 10:00).
+A cloud-synchronized Progressive Web Application for University of Sao Paulo (USP)
+students to track attendance, manage academic schedules and monitor absence limits
+across devices.
 
-## Regras de falta
-- Matéria de 4 créditos: limite de 8 faltas (dois encontros semanais).
-- Matéria de 2 créditos: limite de 4 faltas (um encontro semanal).
-- Cada aula faltada conta como uma falta. Faltar nas duas aulas do mesmo dia conta
-  como duas.
-- Feriados, dias sem aula e ausências do professor não são contabilizados no limite.
+[![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](https://m87.js.org)
+[![Supabase](https://img.shields.io/badge/Supabase-auth%20%26%20realtime-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
+[![Version](https://img.shields.io/badge/version-0.9%20beta-ff8a1e)](CHANGELOG.md)
+[![Last commit](https://img.shields.io/github/last-commit/viwctor/m87)](https://github.com/viwctor/m87/commits)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-## Instalação
-O aplicativo abre diretamente pelo endereço acima, mas pode ser instalado para
-funcionar como um app, com ícone próprio, janela dedicada e uso offline.
+**Live demo:** [m87.js.org](https://m87.js.org)
 
-- Android (Chrome): abra o endereço, toque no menu de três pontos e selecione
-  "Instalar app".
-- iPhone e iPad (Safari): abra o endereço no Safari, toque em Compartilhar e
-  selecione "Adicionar à Tela de Início". No iOS, a instalação funciona apenas pelo
-  Safari.
-- Computador (Chrome ou Edge): abra o endereço e clique no ícone de instalar na barra
-  de endereço, ou utilize o menu e selecione "Instalar M87".
+</div>
 
-## Como usar
-- Painel: lista as matérias do semestre ativo com o número de faltas atuais e o
-  limite de cada disciplina. A barra de progresso muda de cor conforme o uso, e um
-  aviso é exibido na véspera do limite e quando o limite é atingido.
-- Registrar ocorrência: toque no botão "+" ou em um dia do calendário. Selecione a
-  data e, para cada aula, marque Presente, Falta ou Professor faltou. O dia inteiro
-  também pode ser marcado como Feriado ou Sem aula.
-- Calendário: cada dia é dividido em faixas, uma para cada aula. Faltar em apenas uma
-  das aulas preenche metade da faixa; faltar nas duas preenche a faixa inteira.
-- Gerenciar (menu no canto superior direito): adicionar, editar e remover matérias e
-  semestres, definir horários e dias, escolher cor da matéria e alternar o semestre
-  ativo.
+---
 
-## Backup dos dados
-Os dados ficam armazenados apenas no aparelho em uso, no armazenamento local do
-navegador. Limpar os dados do site ou do navegador remove as informações. Após cada
-alteração, o aplicativo exibe um lembrete para realizar o backup.
+## Screenshots
 
-- Exportar: menu Gerenciar, seção Backup, opção Exportar. Gera um arquivo `.json` com
-  todos os dados.
-- Importar: menu Gerenciar, seção Backup, opção Importar. Restaura os dados a partir
-  de um arquivo `.json`, inclusive em outro aparelho.
+> Add your images to a `docs/` folder and they render here automatically (see [Adding media](#adding-media)).
 
-Recomenda-se exportar um backup periodicamente para evitar perda de dados.
+| Absences (dashboard) | Calendar | Subjects |
+| :---: | :---: | :---: |
+| ![Dashboard](docs/dashboard.png) | ![Calendar](docs/calendar.png) | ![Subjects](docs/subjects.png) |
+
+<div align="center">
+
+![M87 walkthrough](docs/demo.gif)
+
+</div>
+
+## Install on your device
+
+M87 can be installed as an app, with its own icon, a dedicated window and offline support.
+
+| Android (Chrome) | iOS (Safari) |
+| :---: | :---: |
+| ![Install on Android](docs/install-android.gif) | ![Install on iOS](docs/install-ios.gif) |
+
+- Android (Chrome): open the site, open the menu and choose Install app.
+- iOS and iPadOS (Safari): open the site, tap Share and choose Add to Home Screen.
+- Desktop (Chrome or Edge): open the site and click the install icon in the address bar.
+
+## Overview
+
+M87 is a Progressive Web Application designed for University of Sao Paulo students to
+manage attendance throughout the academic semester. It records absences per subject and
+per individual class meeting, calculates how many absences are still allowed in each
+subject, and presents the whole semester on a calendar.
+
+The application lets students:
+
+- Register absences per subject and per class meeting.
+- Monitor the remaining absence margin in real time.
+- Visualize attendance history on a monthly calendar.
+- Synchronize data automatically across multiple devices.
+- Manage semesters, schedules, rooms and professors.
+
+Built with vanilla JavaScript and Supabase, M87 combines a lightweight frontend (no
+framework and no build step) with cloud persistence and real-time synchronization.
+
+## Key Features
+
+### Attendance tracking
+- Per-subject and per-meeting absence control.
+- Automatic absence-limit calculation based on course credits.
+- Visual progress bars that change color as the limit approaches.
+- Warning states and notifications when only one absence is left and when the limit is reached.
+
+### Academic organization
+- Multiple semesters (up to 18).
+- Custom schedules with morning, afternoon, evening, full-time and user-defined time slots.
+- Room and professor information per meeting, with one-tap email copy.
+- Subject color customization with gradient palette.
+- Notes attached to specific dates.
+- Holidays and no-class days excluded from the limit.
+
+### Cloud synchronization
+- Secure authentication through Supabase Auth.
+- Real-time sync across phone, tablet and desktop.
+- Connection indicator (online, saving, offline) with editing paused while offline.
+- Persistent cloud storage, one JSON document per user.
+
+### Progressive Web App
+- Installable on desktop and mobile, with offline support.
+- Responsive interface: bottom navigation on mobile, collapsible sidebar and two-column
+  layout on desktop.
+- Three languages (Portuguese, English, Spanish) with automatic detection of the system language.
+- Fast loading through a service worker that caches the app shell.
+
+## Authentication
+
+Access is restricted to University of Sao Paulo accounts, enforced by a database trigger.
+Supported domains:
+
+- `@usp.br`
+- any USP subdomain such as `@alumni.usp.br`
+
+Account creation requires registration with a valid institutional email, email
+confirmation, and successful authentication through Supabase Auth.
+
+## Attendance rules
+
+The absence limit follows the USP rule of a maximum of 25 percent of missed classes:
+
+- A 4-credit course (two weekly meetings) allows up to 8 absences.
+- A 2-credit course (one weekly meeting) allows up to 4 absences.
+- Each missed meeting counts as one absence. Missing both meetings of a day counts as two.
+- Holidays, no-class days and professor absences are not counted toward the limit.
+
+## Technology stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | HTML5, CSS3, vanilla JavaScript (ES2020) |
+| PWA | Web App Manifest, Service Worker (network-first) |
+| Internationalization | Custom dictionary (Portuguese, English, Spanish) |
+| Authentication | Supabase Auth (USP email enforced by trigger) |
+| Database | Supabase Postgres, JSONB document per user |
+| Security | Row Level Security (RLS) |
+| Realtime | Supabase Realtime (postgres_changes) |
+| Hosting | GitHub Pages |
+| Domain | m87.js.org |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Client["Browser / PWA"]
+    UI["User interface"]
+    SW["Service worker (offline shell)"]
+    LS["localStorage cache"]
+  end
+  subgraph Supabase["Supabase"]
+    Auth["Auth (USP trigger)"]
+    DB[("Postgres: app_data, JSONB, RLS")]
+    RT["Realtime"]
+  end
+  UI <--> LS
+  UI <--> SW
+  UI -->|"sign in"| Auth
+  UI -->|"debounced save"| DB
+  DB -->|"row change"| RT
+  RT -->|"push to other devices"| UI
+```
+
+### Data flow
+1. The user authenticates through Supabase Auth.
+2. All app state (semesters, subjects, occurrences, notes) is stored as a single JSONB row.
+3. Row Level Security isolates each user's records.
+4. Saves are debounced and mirrored to localStorage for instant loads.
+5. Realtime broadcasts row changes, and connected devices update automatically. A device
+   id is attached to each write so a client ignores the echo of its own changes.
+
+## Local development
+
+No dependencies and no build step. Serve the folder over HTTP, since a service worker
+requires `http://` or `https://` rather than `file://`.
+
+```bash
+python -m http.server 8080
+# then open http://localhost:8080
+```
+
+On Windows you can also run the included `_serve.ps1`.
+
+### Backend configuration (optional)
+
+Cloud login and sync are powered by Supabase. Open `supabase.js` and set:
+
+```js
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "your-anon-public-key";
+```
+
+Leaving both empty runs the app fully offline with no login screen.
+
+## Deployment
+
+The application is a static site hosted on GitHub Pages and served from the custom domain
+[m87.js.org](https://m87.js.org). Pushing to the default branch publishes automatically.
+All paths are relative, so the app works equally at a domain root or a sub-path.
+
+## Roadmap
+
+- [ ] Path-based routing (`/calendar`) instead of hash routing
+- [ ] Shareable and exportable semester schedule
+- [ ] Reminders before reaching an absence limit
+- [ ] Optional light theme
+- [ ] Advanced analytics dashboard
+
+## Adding media
+
+GitHub renders standard Markdown images, so nothing in the code breaks. Images are files
+referenced by relative path:
+
+1. Create a `docs/` folder in the repository root.
+2. Add `dashboard.png`, `calendar.png`, `subjects.png` and `demo.gif`.
+3. Commit them. The links in the Screenshots section fill in automatically.
+
+Until the files exist, the image links simply do not load and cause no error.
+
+## License
+
+Released under the [MIT License](LICENSE).
+
+Built by [viwctor](https://github.com/viwctor) with Claude Code.

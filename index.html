@@ -31,15 +31,14 @@
     <div class="auth-inner">
       <div class="auth-logo"><img src="./icons/icon-192.png" alt="" /></div>
       <h1 class="auth-title">M87</h1>
-      <p class="auth-sub">seu controle de faltas personalizado</p>
       <div class="auth-form">
-        <input type="text" id="authUsername" placeholder="Nome de usuário" autocomplete="username" hidden />
-        <input type="email" id="authEmail" placeholder="E-mail" autocomplete="email" />
-        <input type="password" id="authPassword" placeholder="Senha" autocomplete="current-password" />
+        <input type="text" id="authUsername" data-i18n-ph="auth.user_ph" placeholder="Nome de usuário" autocomplete="username" maxlength="24" hidden />
+        <input type="email" id="authEmail" data-i18n-ph="auth.email_ph" placeholder="E-mail institucional USP" autocomplete="email" maxlength="120" />
+        <input type="password" id="authPassword" data-i18n-ph="auth.pass_ph" placeholder="Senha" autocomplete="current-password" maxlength="72" />
         <div id="authMsg" class="auth-msg"></div>
-        <button class="btn btn-primary" id="authPrimary">Entrar</button>
-        <button class="btn btn-ghost" id="authSecondary">Criar conta</button>
-        <button class="auth-link" id="authForgot">Esqueci a senha</button>
+        <button class="btn btn-primary" id="authPrimary" data-i18n="auth.enter">Entrar</button>
+        <button class="btn btn-ghost" id="authSecondary" data-i18n="auth.create">Criar conta</button>
+        <button class="auth-link" id="authForgot" data-i18n="auth.forgot">Esqueci a senha</button>
       </div>
     </div>
   </div>
@@ -50,8 +49,9 @@
       <img src="./icons/icon-192.png" alt="M87" class="brand-logo" />
       <h1 class="brand-title">M87</h1>
     </div>
+    <span id="connDot" class="conn-dot online" data-i18n-title="header.conn" title="Conexão"></span>
     <div class="header-actions">
-      <button id="semesterBtn" class="semester-btn" aria-label="Trocar semestre">
+      <button id="semesterBtn" class="semester-btn" data-i18n-aria="header.change_sem" aria-label="Trocar semestre">
         <span id="semesterBtnLabel"></span>
         <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -65,8 +65,8 @@
       <div id="subjectsByDay"></div>
       <div class="manage-section">
         <div class="manage-head">
-          <h4>Lista de matérias</h4>
-          <button class="btn btn-sm btn-primary" id="addSubjectBtn">+ Nova matéria</button>
+          <h4 data-i18n="subjects.list">Lista de matérias</h4>
+          <button class="btn btn-sm btn-primary" id="addSubjectBtn" data-i18n="subjects.new">+ Nova matéria</button>
         </div>
         <div id="subjectList" class="subject-list"></div>
       </div>
@@ -82,12 +82,12 @@
     <!-- Calendário -->
     <section id="view-calendar" class="view">
       <div class="cal-toolbar">
-        <button id="calPrev" class="icon-btn" aria-label="Mês anterior">
+        <button id="calPrev" class="icon-btn" data-i18n-aria="cal.prev" aria-label="Mês anterior">
           <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <h2 id="calTitle" class="cal-title"></h2>
-        <button id="calToday" class="btn btn-sm btn-ghost cal-today">Hoje</button>
-        <button id="calNext" class="icon-btn" aria-label="Próximo mês">
+        <button id="calToday" class="btn btn-sm btn-ghost cal-today" data-i18n="cal.today">Hoje</button>
+        <button id="calNext" class="icon-btn" data-i18n-aria="cal.next" aria-label="Próximo mês">
           <svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -96,10 +96,10 @@
       </div>
       <div id="calGrid" class="cal-grid"></div>
       <div class="cal-legend">
-        <span><i class="dot dot-falta"></i> Falta</span>
-        <span><i class="dot dot-prof"></i> Prof. faltou</span>
-        <span><i class="dot dot-holiday"></i> Feriado</span>
-        <span><i class="dot dot-noclass"></i> Sem aula</span>
+        <span><i class="dot dot-falta"></i> <span data-i18n="cal.legend_falta">Falta</span></span>
+        <span><i class="dot dot-prof"></i> <span data-i18n="cal.legend_prof">Prof. faltou</span></span>
+        <span><i class="dot dot-holiday"></i> <span data-i18n="cal.legend_holiday">Feriado</span></span>
+        <span><i class="dot dot-noclass"></i> <span data-i18n="cal.legend_noclass">Sem aula</span></span>
       </div>
     </section>
 
@@ -109,24 +109,23 @@
         <span class="account-avatar" id="accountAvatar">M</span>
         <span class="account-info">
           <span class="account-name" id="accountName">Conta</span>
-          <span class="account-sub muted small">Toque para gerenciar a conta</span>
+          <span class="account-sub muted small" data-i18n="set.account_sub">Toque para gerenciar a conta</span>
         </span>
         <svg viewBox="0 0 24 24" width="20" height="20" class="account-caret"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
 
       <div class="manage-section">
-        <h4>Backup</h4>
-        <p class="muted small">Salve seus dados em um arquivo ou restaure a partir de um backup.</p>
-        <div class="row-btns">
-          <button class="btn btn-sm btn-primary" id="exportBtn">Exportar</button>
-          <button class="btn btn-sm btn-ghost" id="importBtn">Importar</button>
-          <input type="file" id="importFile" accept="application/json" hidden />
+        <h4 data-i18n="set.language">Idioma</h4>
+        <div class="lang-seg" id="langSeg">
+          <button class="lang-btn" data-lang="pt">Português</button>
+          <button class="lang-btn" data-lang="en">English</button>
+          <button class="lang-btn" data-lang="es">Español</button>
         </div>
       </div>
 
       <div class="manage-section">
-        <h4>Sobre</h4>
-        <button class="btn btn-sm btn-ghost" id="aboutBtn">Sobre o aplicativo</button>
+        <h4 data-i18n="set.about">Sobre</h4>
+        <button class="btn btn-sm btn-ghost" id="aboutBtn" data-i18n="set.about_btn">Sobre o aplicativo</button>
       </div>
     </section>
   </main>
@@ -136,19 +135,22 @@
     <div class="nav-logo"><img src="./icons/icon-192.png" alt="M87" /><span>M87</span></div>
     <button class="nav-btn" data-view="subjects">
       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M5 4h11a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2Zm2 4v2h7V8H7Zm0 4v2h7v-2H7Z"/></svg>
-      <span>Matérias</span>
+      <span data-i18n="nav.subjects">Matérias</span>
     </button>
     <button class="nav-btn active" data-view="dashboard">
       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm-1.2 11.4-3.2-3.2 1.4-1.4 1.8 1.8 4.2-4.2 1.4 1.4-5.6 5.6Z"/></svg>
-      <span>Faltas</span>
+      <span data-i18n="nav.dashboard">Faltas</span>
     </button>
     <button class="nav-btn" data-view="calendar">
       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm12 7v10H5V9h14Z"/></svg>
-      <span>Calendário</span>
+      <span data-i18n="nav.calendar">Calendário</span>
     </button>
     <button class="nav-btn" data-view="settings">
       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M19.14 12.94a7.49 7.49 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.3 7.3 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.49 7.49 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.43.34.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.18.12.47.02.61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
-      <span>Config</span>
+      <span data-i18n="nav.settings">Ajustes</span>
+    </button>
+    <button class="nav-collapse" id="navCollapse" data-i18n-aria="nav.collapse" aria-label="Recolher menu">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </nav>
 
@@ -161,33 +163,33 @@
   <div id="dayModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
-        <h3 id="dayModalTitle">Registrar ocorrência</h3>
-        <button class="icon-btn" data-close-modal aria-label="Fechar">
+        <h3 id="dayModalTitle" data-i18n="day.title_default">Registrar ocorrência</h3>
+        <button class="icon-btn" data-close-modal data-i18n-aria="misc.close" aria-label="Fechar">
           <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
         </button>
       </div>
 
       <label class="field">
-        <span>Data</span>
+        <span data-i18n="day.date">Data</span>
         <input type="date" id="dayDate" />
       </label>
 
       <div id="daySlots" class="slots"></div>
 
       <label class="field">
-        <span>Observação (opcional)</span>
-        <input type="text" id="dayNote" placeholder="ex: consulta médica" autocomplete="off" />
+        <span data-i18n="day.note">Observação (opcional)</span>
+        <input type="text" id="dayNote" data-i18n-ph="day.note_ph" placeholder="ex: consulta médica" autocomplete="off" maxlength="200" />
       </label>
 
       <div class="day-marks">
-        <button class="chip" data-mark="holiday">Feriado</button>
-        <button class="chip" data-mark="noclass">Sem aula</button>
-        <button class="chip chip-clear" data-mark="clear">Limpar dia</button>
+        <button class="chip" data-mark="holiday" data-i18n="day.holiday">Feriado</button>
+        <button class="chip" data-mark="noclass" data-i18n="day.noclass">Sem aula</button>
+        <button class="chip chip-clear" data-mark="clear" data-i18n="day.clear">Limpar dia</button>
       </div>
 
       <div class="modal-foot">
-        <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-        <button class="btn btn-primary" id="daySaveBtn">Salvar</button>
+        <button class="btn btn-ghost" data-close-modal data-i18n="day.cancel">Cancelar</button>
+        <button class="btn btn-primary" id="daySaveBtn" data-i18n="day.save">Salvar</button>
       </div>
     </div>
   </div>
@@ -196,39 +198,39 @@
   <div id="subjectModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
-        <h3 id="subjectModalTitle">Matéria</h3>
-        <button class="icon-btn" data-close-modal aria-label="Fechar">
+        <h3 id="subjectModalTitle" data-i18n="subj.title">Matéria</h3>
+        <button class="icon-btn" data-close-modal data-i18n-aria="misc.close" aria-label="Fechar">
           <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
         </button>
       </div>
 
-      <label class="field"><span>Nome da matéria *</span><input type="text" id="subjName" placeholder="ex: Matemática Financeira" /></label>
-      <label class="field"><span>Professor(a)</span><input type="text" id="subjProf" placeholder="Nome do docente" /></label>
-      <label class="field"><span>E-mail USP do professor</span><input type="email" id="subjEmail" placeholder="docente@usp.br" /></label>
+      <label class="field"><span data-i18n="subj.name">Nome da matéria *</span><input type="text" id="subjName" data-i18n-ph="subj.name_ph" placeholder="ex: Matemática Financeira" maxlength="80" /></label>
+      <label class="field"><span data-i18n="subj.prof">Professor(a)</span><input type="text" id="subjProf" data-i18n-ph="subj.prof_ph" placeholder="Nome do docente" maxlength="80" /></label>
+      <label class="field"><span data-i18n="subj.email">E-mail USP do professor</span><input type="email" id="subjEmail" placeholder="docente@usp.br" maxlength="120" /></label>
 
-      <label class="field"><span>Créditos</span>
+      <label class="field"><span data-i18n="subj.credits">Créditos</span>
         <select id="subjCredits">
-          <option value="2">2 créditos (máx. 4 faltas)</option>
-          <option value="4">4 créditos (máx. 8 faltas)</option>
+          <option value="2" data-i18n="subj.credits2">2 créditos (máx. 4 faltas)</option>
+          <option value="4" data-i18n="subj.credits4">4 créditos (máx. 8 faltas)</option>
         </select>
       </label>
 
       <div class="field">
-        <span>Cor</span>
+        <span data-i18n="subj.color">Cor</span>
         <div id="colorPalette" class="color-palette"></div>
       </div>
 
       <div class="field">
-        <span>Horários</span>
+        <span data-i18n="subj.schedule">Horários</span>
         <div id="meetingList" class="meeting-list"></div>
-        <button class="btn btn-sm btn-ghost" id="addMeetingBtn" type="button">+ Adicionar horário</button>
+        <button class="btn btn-sm btn-ghost" id="addMeetingBtn" type="button" data-i18n="subj.add_meeting">+ Adicionar horário</button>
       </div>
 
       <div class="modal-foot space-between">
-        <button class="btn btn-ghost btn-danger" id="deleteSubjectBtn">Excluir</button>
+        <button class="btn btn-ghost btn-danger" id="deleteSubjectBtn" data-i18n="subj.delete">Excluir</button>
         <div class="row-btns">
-          <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-          <button class="btn btn-primary" id="subjectSaveBtn">Salvar</button>
+          <button class="btn btn-ghost" data-close-modal data-i18n="day.cancel">Cancelar</button>
+          <button class="btn btn-primary" id="subjectSaveBtn" data-i18n="day.save">Salvar</button>
         </div>
       </div>
     </div>
@@ -238,26 +240,23 @@
   <div id="aboutModal" class="modal-overlay" hidden>
     <div class="modal about-modal">
       <div class="modal-head">
-        <h3>Sobre</h3>
-        <button class="icon-btn" data-close-modal aria-label="Fechar">
+        <h3 data-i18n="about.title">Sobre</h3>
+        <button class="icon-btn" data-close-modal data-i18n-aria="misc.close" aria-label="Fechar">
           <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
         </button>
       </div>
       <div class="terminal">
-<pre class="t-head">Projeto M87
+<pre class="t-head"><span data-i18n="about.project">Projeto M87</span>
 <span id="aboutVersion"></span></pre>
-<pre class="t-log">Novidades desta versão:
-   Login com e-mail USP e dados na nuvem
-   Nova guia Matérias (info por dia, sala, professor)
-   Criação guiada de semestres (até 18)
-   Horários: manhã, tarde, noite, integral e personalizado
-   Seletor de semestre dentro do app
-   Resumo com total de créditos
-   Diálogos personalizados (sem caixas do sistema)
-   Calendário troca de semestre ao deslizar + botão Hoje
-   Deslizar troca de guia
+<pre class="t-log" data-i18n="about.changelog">Novidades 0.9:
+   Sincronização em tempo real entre aparelhos
+   Indicador de conexão (online/instável/offline)
+   Idiomas: português, inglês e espanhol
+   Layout desktop em duas colunas com menu recolhível
+   Cards por dia agrupando as matérias
+   Confirmações com contagem regressiva
 </pre>
-        <p class="made-by">Desenvolvido com <span class="cc-orange">Claude Code</span> por <a id="creditViwctor" class="dev-link">viwctor</a></p>
+        <p class="made-by"><span data-i18n="about.made_with">Desenvolvido com</span> <span class="cc-orange">Claude Code</span> <span data-i18n="about.made_by">por</span> <a id="creditViwctor" class="dev-link">viwctor</a></p>
       </div>
     </div>
   </div>
@@ -266,8 +265,8 @@
   <div id="semesterModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
-        <h3>Semestre</h3>
-        <button class="icon-btn" data-close-modal aria-label="Fechar">
+        <h3 data-i18n="sem.title">Semestre</h3>
+        <button class="icon-btn" data-close-modal data-i18n-aria="misc.close" aria-label="Fechar">
           <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
         </button>
       </div>
@@ -279,26 +278,26 @@
   <div id="semEditModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
-        <h3 id="semEditTitle">Novo semestre</h3>
-        <button class="icon-btn" data-close-modal aria-label="Fechar">
+        <h3 id="semEditTitle" data-i18n="sem.new">Novo semestre</h3>
+        <button class="icon-btn" data-close-modal data-i18n-aria="misc.close" aria-label="Fechar">
           <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
         </button>
       </div>
-      <label class="field"><span>Semestre</span><select id="semNumber"></select></label>
+      <label class="field"><span data-i18n="sem.label">Semestre</span><select id="semNumber"></select></label>
       <div class="field-row">
-        <label class="field"><span>Período</span>
+        <label class="field"><span data-i18n="sem.period">Período</span>
           <select id="semPeriod">
-            <option value="fev">Fevereiro – Junho</option>
-            <option value="ago">Agosto – Dezembro</option>
+            <option value="fev" data-i18n="sem.period_feb">Fevereiro – Junho</option>
+            <option value="ago" data-i18n="sem.period_aug">Agosto – Dezembro</option>
           </select>
         </label>
-        <label class="field"><span>Ano</span><select id="semYear"></select></label>
+        <label class="field"><span data-i18n="sem.year">Ano</span><select id="semYear"></select></label>
       </div>
       <div class="modal-foot space-between">
-        <button class="btn btn-ghost btn-danger" id="semDeleteBtn" hidden>Excluir</button>
+        <button class="btn btn-ghost btn-danger" id="semDeleteBtn" data-i18n="sem.delete" hidden>Excluir</button>
         <div class="row-btns">
-          <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-          <button class="btn btn-primary" id="semSaveBtn">Salvar</button>
+          <button class="btn btn-ghost" data-close-modal data-i18n="day.cancel">Cancelar</button>
+          <button class="btn btn-primary" id="semSaveBtn" data-i18n="day.save">Salvar</button>
         </div>
       </div>
     </div>
@@ -307,12 +306,12 @@
   <!-- ===================== MODAL: CONFIRMAÇÃO ===================== -->
   <div id="confirmModal" class="modal-overlay" hidden>
     <div class="modal modal-confirm">
-      <h3 id="confirmTitle">Confirmar</h3>
+      <h3 id="confirmTitle" data-i18n="confirm.title">Confirmar</h3>
       <p id="confirmMsg"></p>
-      <input type="text" id="confirmInput" autocomplete="off" hidden />
+      <input type="text" id="confirmInput" autocomplete="off" maxlength="72" hidden />
       <div class="modal-foot">
-        <button class="btn btn-ghost" id="confirmNo">Cancelar</button>
-        <button class="btn btn-primary" id="confirmYes">Confirmar</button>
+        <button class="btn btn-ghost" id="confirmNo" data-i18n="confirm.cancel">Cancelar</button>
+        <button class="btn btn-primary" id="confirmYes" data-i18n="confirm.yes">Confirmar</button>
       </div>
     </div>
   </div>
@@ -321,8 +320,8 @@
   <div id="accountModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
-        <h3>Conta</h3>
-        <button class="icon-btn" data-close-modal aria-label="Fechar">
+        <h3 data-i18n="acc.title">Conta</h3>
+        <button class="icon-btn" data-close-modal data-i18n-aria="misc.close" aria-label="Fechar">
           <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m12 10.6 5-5 1.4 1.4-5 5 5 5L17 18.4l-5-5-5 5L5.6 17l5-5-5-5L7 5.6l5 5Z"/></svg>
         </button>
       </div>
@@ -335,29 +334,24 @@
       </div>
 
       <div class="manage-section">
-        <button class="btn btn-ghost" id="logoutBtn" style="width:100%">Sair da conta</button>
+        <button class="btn btn-ghost" id="logoutBtn" style="width:100%" data-i18n="acc.logout">Sair da conta</button>
       </div>
 
       <div class="manage-section" style="border:none; margin-bottom:0; padding-bottom:0">
-        <h4 style="color:var(--danger)">Zona de perigo</h4>
-        <button class="btn btn-ghost btn-danger wipe-btn" id="wipeBtn">Apagar todos os dados</button>
-        <button class="btn btn-ghost btn-danger wipe-btn" id="deleteAccountBtn">Excluir conta</button>
+        <button class="btn btn-ghost btn-danger wipe-btn" id="wipeBtn" data-i18n="acc.wipe">Apagar todos os dados</button>
+        <button class="btn btn-ghost btn-danger wipe-btn" id="deleteAccountBtn" data-i18n="acc.delete">Excluir conta</button>
       </div>
     </div>
   </div>
 
-  <!-- Lembrete de backup -->
-  <div id="backupReminder" class="backup-reminder" hidden>
-    <span class="br-text">Alteração salva. Faça um backup para não perder seus dados.</span>
-    <div class="br-actions">
-      <button class="btn btn-sm btn-ghost" id="brDismiss">Dispensar</button>
-      <button class="btn btn-sm btn-primary" id="brBackup">Fazer backup</button>
-    </div>
+  <div id="offlineBar" class="offline-bar" hidden>
+    <span data-i18n="misc.offline_bar">Sem conexão com a rede — alterações desativadas.</span>
+    <button class="btn btn-sm btn-ghost" id="retryConn" data-i18n="misc.retry">Tentar novamente</button>
   </div>
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./i18n.js"></script>
   <script src="./supabase.js"></script>
   <script src="./app.js"></script>
 </body>

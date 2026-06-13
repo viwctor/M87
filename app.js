@@ -22,7 +22,7 @@
    ============================================================ */
 
 const STORE_KEY = "m87.data";
-const APP_VERSION = "0.8 (beta)";
+const APP_VERSION = "0.9 (beta)";
 
 /* id único deste aparelho (para ignorar o eco das próprias escritas no tempo real) */
 const DEVICE_ID = (() => {
@@ -69,8 +69,7 @@ function slotInfo(id) {
   return { id, time: id, short: id, start: "99:99", label: String(id), shift: "" };
 }
 
-const WEEKDAYS = ["", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-const WD_SHORT = ["", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+/* dias da semana: usar weekdayName(wd) / weekdayShort(wd) do i18n.js */
 
 /* ---------- Dados iniciais: grade 2026.1 (noite) ---------- */
 function seedData() {
@@ -180,13 +179,7 @@ let cloudSaveTimer = null;
 function saveData() {
   _dataVer++;
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
-  if (cloudUserId) {
-    clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(() => {
-      data._device = DEVICE_ID; // marca a origem para o tempo real ignorar o eco
-      M87Cloud.saveData(cloudUserId, data).catch(e => console.error("Falha ao salvar na nuvem:", e));
-    }, 800);
-  }
+  if (cloudUserId) { clearTimeout(cloudSaveTimer); cloudSaveTimer = setTimeout(pushCloud, 700); }
 }
 
 /* ---------- Helpers ---------- */
@@ -247,29 +240,31 @@ function countAbsences(subjectId) {
 
 function meetingsText(s) {
   return (s.meetings || []).length
-    ? s.meetings.map(m => `${WD_SHORT[m.weekday]} ${slotInfo(m.slot).short}`).join(" · ")
-    : "sem horário definido";
+    ? s.meetings.map(m => `${weekdayShort(m.weekday)} ${slotInfo(m.slot).short}`).join(" · ")
+    : t("subjects.no_schedule");
 }
+/* limita o tamanho de um texto para preservar o armazenamento por usuário */
+function clampText(str, n) { return String(str == null ? "" : str).slice(0, n); }
 
 function toast(msg) {
-  const t = $("#toast");
-  t.textContent = msg; t.hidden = false;
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => (t.hidden = true), 2200);
+  const el = $("#toast");
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(el._tid);
+  el._tid = setTimeout(() => (el.hidden = true), 2200);
 }
 function esc(str = "") {
   return str.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
-function copyText(t) {
-  if (!t) return;
-  const done = () => toast("E-mail copiado ✓");
+function copyText(txt) {
+  if (!txt) return;
+  const done = () => toast(t("misc.copied_email"));
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(t).then(done).catch(() => toast(t));
+    navigator.clipboard.writeText(txt).then(done).catch(() => toast(txt));
   } else {
     const ta = document.createElement("textarea");
-    ta.value = t; document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); done(); } catch { toast(t); }
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch { toast(txt); }
     ta.remove();
   }
 }
@@ -291,11 +286,40 @@ function maybeNotifyLimit() {
     const remaining = maxFor(s) - countAbsences(s.id);
     const key = data.activeSemester + ":" + s.id;
     if (remaining === 1) {
-      if (!_notified.has(key)) { _notified.add(key); notify("Só pode faltar mais 1 dia", s.name); }
+      if (!_notified.has(key + ":1")) { _notified.add(key + ":1"); _notified.delete(key + ":0"); notify(t("notify.one_left_title"), s.name); }
+    } else if (remaining <= 0) {
+      if (!_notified.has(key + ":0")) { _notified.add(key + ":0"); _notified.delete(key + ":1"); notify(t("notify.none_left_title"), s.name); }
     } else {
-      _notified.delete(key);
+      _notified.delete(key + ":1"); _notified.delete(key + ":0");
     }
   }
+}
+
+/* ---------- Conexão (bolinha de status) ---------- */
+function setConn(state) {            // "online" | "saving" | "offline"
+  const dot = $("#connDot");
+  if (dot) dot.className = "conn-dot " + state;
+  const bar = $("#offlineBar");
+  if (bar) bar.hidden = state !== "offline";
+}
+function updateConn() {
+  setConn(navigator.onLine ? "online" : "offline");
+  if (navigator.onLine && cloudUserId) pushCloud();
+}
+/* bloqueia alterações quando offline (modo nuvem) */
+function blockedOffline() {
+  if (cloudUserId && !navigator.onLine) { setConn("offline"); toast(t("misc.offline")); return true; }
+  return false;
+}
+/* envia ao Supabase com retry; mantém a bolinha amarela enquanto tenta */
+function pushCloud() {
+  if (!cloudUserId) return;
+  if (!navigator.onLine) { setConn("offline"); return; }
+  setConn("saving");
+  data._device = DEVICE_ID;
+  M87Cloud.saveData(cloudUserId, data)
+    .then(() => setConn("online"))
+    .catch(() => { setConn(navigator.onLine ? "saving" : "offline"); clearTimeout(cloudSaveTimer); cloudSaveTimer = setTimeout(pushCloud, 4000); });
 }
 
 /* ============================================================
@@ -305,18 +329,17 @@ function renderDashboard() {
   const sem = activeSem();
   if (!sem) {
     $("#semesterBanner").textContent = "";
-    $("#dashboardGrid").innerHTML = `<div class="empty-state"><div class="big">🕳️</div>Nenhum semestre ainda.<br/>Toque no seletor de semestre (no topo) para criar um.</div>`;
+    $("#dashboardGrid").innerHTML = `<div class="empty-state">${t("dash.no_semester")}</div>`;
     $("#semesterSummary").innerHTML = "";
     return;
   }
-  $("#semesterBanner").textContent = `${sem.subjects.length} matéria(s)`;
+  $("#semesterBanner").textContent = tn("dash.subjects", sem.subjects.length);
 
   const grid = $("#dashboardGrid");
   grid.innerHTML = "";
 
   if (!sem.subjects.length) {
-    grid.innerHTML = `<div class="empty-state"><div class="big">🕳️</div>
-      Nenhuma matéria neste semestre.<br/>Vá em Config → "+ Matéria".</div>`;
+    grid.innerHTML = `<div class="empty-state">${t("dash.no_subjects")}</div>`;
     $("#semesterSummary").innerHTML = "";
     return;
   }
@@ -338,9 +361,9 @@ function renderDashboard() {
     const numColor = level === "safe" ? "var(--text)" : `var(--${level})`;
 
     let alertHtml = "";
-    if (remaining === 1) alertHtml = `<div class="sc-alert a-warn">Só pode faltar mais 1</div>`;
-    else if (remaining === 0) alertHtml = `<div class="sc-alert a-critical">Limite de faltas atingido</div>`;
-    else if (remaining < 0) alertHtml = `<div class="sc-alert a-critical">Limite ultrapassado em ${-remaining}</div>`;
+    if (remaining === 1) alertHtml = `<div class="sc-alert a-warn">${t("dash.alert_one")}</div>`;
+    else if (remaining === 0) alertHtml = `<div class="sc-alert a-critical">${t("dash.alert_reached")}</div>`;
+    else if (remaining < 0) alertHtml = `<div class="sc-alert a-critical">${t("dash.alert_over", { n: -remaining })}</div>`;
 
     const card = document.createElement("div");
     card.className = "subject-card";
@@ -352,13 +375,13 @@ function renderDashboard() {
           <div class="sc-meta">${meetingsText(s)}</div>
         </div>
         <div class="sc-count">
-          <span class="label">Faltas</span>
+          <span class="label">${t("dash.faltas")}</span>
           <b style="color:${numColor}">${used}</b><span class="max">/${max}</span>
         </div>
       </div>
       <div class="bar"><div class="bar-fill fill-${level}" style="width:${Math.min(100, ratio * 100)}%"></div></div>
       <div class="sc-foot">
-        <span class="muted">${remaining > 0 ? `Pode faltar mais ${remaining}` : "Sem margem"}</span>
+        <span class="muted">${remaining > 0 ? t("dash.can_miss", { n: remaining }) : t("dash.no_margin")}</span>
       </div>
       ${alertHtml}`;
     grid.appendChild(card);
@@ -399,16 +422,16 @@ function renderSummary() {
     <div class="sum-item">
       <span class="sum-dot" style="background:${s.color}"></span>
       <span class="sum-name">${esc(s.name)}</span>
-      <span class="sum-rest">${rest} aula${rest === 1 ? "" : "s"}</span>
+      <span class="sum-rest">${tn("sum.classes", rest)}</span>
     </div>`).join("");
 
   wrap.innerHTML = `
     <div class="summary-card">
       <div class="summary-head">
-        <h3>Resumo do semestre</h3>
-        <span class="muted small">${creditsTotal} créditos · ${usedTotal}/${maxTotal} faltas</span>
+        <h3>${t("sum.title")}</h3>
+        <span class="muted small">${t("sum.credits_faltas", { c: creditsTotal, u: usedTotal, m: maxTotal })}</span>
       </div>
-      <div class="sum-subtitle muted small">Aulas restantes por matéria</div>
+      <div class="sum-subtitle muted small">${t("sum.remaining")}</div>
       ${list}
     </div>`;
 }
@@ -431,7 +454,7 @@ function renderCalendar() {
   const { year, month } = calRef;
   const occ = semOcc(), marks = semMarks(), notes = semNotes();
 
-  const calLabel = new Date(year, month, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const calLabel = new Date(year, month, 1).toLocaleDateString(localeTag(), { month: "long", year: "numeric" });
   $("#calTitle").textContent = calLabel.charAt(0).toUpperCase() + calLabel.slice(1);
 
   const grid = $("#calGrid");
@@ -528,7 +551,7 @@ function calShift(delta) {
     autoSwitched = true;
     updateSemesterButton();
     renderDashboard();
-    toast("Mudou para " + data.semesters[semKey].label);
+    toast(t("cal.changed_to", { label: semDisplayLabel(data.semesters[semKey]) }));
   }
   renderCalendar();
 }
@@ -562,7 +585,7 @@ function buildDayModalBody(dateStr) {
   const wd = isoWeekday(dateObj);
 
   $("#dayModalTitle").textContent =
-    `${WEEKDAYS[wd]}, ${dateObj.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}`;
+    `${weekdayName(wd)}, ${dateObj.toLocaleDateString(localeTag(), { day: "2-digit", month: "long" })}`;
 
   const wrap = $("#daySlots");
   wrap.innerHTML = "";
@@ -570,7 +593,7 @@ function buildDayModalBody(dateStr) {
   const slots = slotsForWeekday(wd);
 
   if (!slots.length) {
-    wrap.innerHTML = `<p class="muted small">Sem aulas cadastradas neste dia. Você ainda pode marcá-lo como feriado/sem aula abaixo.</p>`;
+    wrap.innerHTML = `<p class="muted small">${t("day.no_classes")}</p>`;
   } else {
     let lastShift = null;
     for (const { id, subj } of slots) {
@@ -578,7 +601,7 @@ function buildDayModalBody(dateStr) {
       if (def.shift !== lastShift) {
         const h = document.createElement("div");
         h.className = "slot-shift muted small";
-        h.textContent = def.shift;
+        h.textContent = tShift(def.shift);
         wrap.appendChild(h);
         lastShift = def.shift;
       }
@@ -591,13 +614,13 @@ function buildDayModalBody(dateStr) {
           <span class="slot-color" style="background:${subj.color}"></span>
           <div>
             <div class="slot-subj">${esc(subj.name)}</div>
-            <div class="slot-time">${def.label} · ${def.time}</div>
+            <div class="slot-time">${tSlotLabel(def.label)} · ${def.time}</div>
           </div>
         </div>
         <div class="slot-options">
-          <button class="seg-btn ${cur === "presente" ? "active" : ""}" data-val="presente">Presente</button>
-          <button class="seg-btn ${cur === "falta" ? "active" : ""}" data-val="falta">Falta</button>
-          <button class="seg-btn ${cur === "prof" ? "active" : ""}" data-val="prof">Prof. faltou</button>
+          <button class="seg-btn ${cur === "presente" ? "active" : ""}" data-val="presente">${t("day.present")}</button>
+          <button class="seg-btn ${cur === "falta" ? "active" : ""}" data-val="falta">${t("day.absent")}</button>
+          <button class="seg-btn ${cur === "prof" ? "active" : ""}" data-val="prof">${t("day.prof_absent")}</button>
         </div>`;
       wrap.appendChild(div);
     }
@@ -620,6 +643,7 @@ function buildDayModalBody(dateStr) {
 }
 
 function saveDayModal() {
+  if (blockedOffline()) return;
   const newDate = $("#dayDate").value;
   if (!newDate) return;
   const occ = semOcc(), marks = semMarks();
@@ -644,18 +668,18 @@ function saveDayModal() {
     if (Object.keys(result).length) occ[date] = result; else delete occ[date];
   }
 
-  const noteVal = $("#dayNote").value.trim();
+  const noteVal = clampText($("#dayNote").value.trim(), 200);
   if (noteVal) notes[date] = noteVal; else delete notes[date];
 
   saveData();
   closeModals();
   renderAll();
   maybeNotifyLimit();
-  toast("Salvo ✓");
-  showBackupReminder();
+  toast(t("day.saved"));
 }
 
 function clearDay() {
+  if (blockedOffline()) return;
   const date = $("#dayDate").value;
   delete semOcc()[date];
   delete semMarks()[date];
@@ -663,8 +687,7 @@ function clearDay() {
   saveData();
   buildDayModalBody(date); // atualiza o modal mostrando o dia zerado
   renderAll();
-  toast("Dia limpo ✓");
-  showBackupReminder();
+  toast(t("day.cleared"));
 }
 
 /* ============================================================
@@ -686,7 +709,7 @@ function renderSubjectsByDay() {
     any = true;
     const block = document.createElement("div");
     block.className = "day-block";
-    block.innerHTML = `<h3 class="day-title">${WEEKDAYS[wd]}</h3>`;
+    block.innerHTML = `<h3 class="day-title">${weekdayName(wd)}</h3>`;
     for (const { id, subj } of slots) {
       const def = slotInfo(id);
       const meeting = (subj.meetings || []).find(m => m.weekday === wd && m.slot === id);
@@ -708,7 +731,7 @@ function renderSubjectsByDay() {
     }
     wrap.appendChild(block);
   }
-  if (!any) wrap.innerHTML = `<p class="muted small" style="padding:4px 2px 14px">Nenhuma matéria com horário cadastrado neste semestre. Adicione abaixo.</p>`;
+  if (!any) wrap.innerHTML = `<p class="muted small" style="padding:4px 2px 14px">${t("subjects.none_scheduled")}</p>`;
 }
 
 /* Config / conta */
@@ -721,9 +744,9 @@ function renderAccount() {
     card.hidden = false;
     const initial = (cloudUsername || "U").charAt(0).toUpperCase();
     $("#accountAvatar").textContent = initial;
-    $("#accountName").textContent = cloudUsername || "Conta";
+    $("#accountName").textContent = cloudUsername || t("set.account");
     $("#accountAvatarLg").textContent = initial;
-    $("#accountNameLg").textContent = cloudUsername || "Conta";
+    $("#accountNameLg").textContent = cloudUsername || t("set.account");
     $("#accountEmail").textContent = cloudEmail || "";
   } else {
     card.hidden = true; // modo local não tem conta
@@ -733,32 +756,36 @@ function renderAccount() {
 function openAccountModal() { showModal("#accountModal"); }
 
 async function deleteAccount() {
-  const ok = await uiConfirm("Excluir a conta apaga TODOS os seus dados da nuvem. Não pode ser desfeito.", { danger: true, yesLabel: "Excluir conta" });
+  const ok = await uiConfirm(t("acc.delete_confirm"), { danger: true, yesLabel: t("acc.delete_yes"), countdown: 10 });
   if (!ok) return;
   try { if (cloudUserId) await M87Cloud.deleteData(cloudUserId); } catch (e) { console.error(e); }
+  // remove de fato o usuário do Auth (via função no banco) — sem isso, a conta continuaria existindo
+  let removed = false;
+  try { await M87Cloud.deleteAccount(); removed = true; } catch (e) { console.error(e); }
   try { await M87Cloud.signOut(); } catch (e) { console.error(e); }
   cloudUserId = null;
   data = emptyData();
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
   closeModals();
   showAuth();
+  authMsg(removed ? t("acc.deleted") : t("acc.delete_partial"));
 }
 
 function renderSubjectList() {
   const list = $("#subjectList");
   list.innerHTML = "";
   const subs = activeSem()?.subjects || [];
-  if (!subs.length) { list.innerHTML = `<p class="muted small">Nenhuma matéria ainda.</p>`; return; }
+  if (!subs.length) { list.innerHTML = `<p class="muted small">${t("subjects.none_yet")}</p>`; return; }
   for (const s of subs) {
     const row = document.createElement("div");
     row.className = "subject-row";
     row.innerHTML = `
       <span class="sr-color" style="background:${s.color}"></span>
       <div class="sr-info">
-        <div class="sr-name">${esc(s.name || "(sem nome)")}</div>
-        <div class="sr-meta">${s.credits} créditos · ${meetingsText(s)}</div>
+        <div class="sr-name">${esc(s.name || t("subjects.no_name"))}</div>
+        <div class="sr-meta">${t("subjects.meta", { credits: s.credits, meetings: meetingsText(s) })}</div>
       </div>
-      <button class="icon-btn" aria-label="Editar">
+      <button class="icon-btn" aria-label="${t("subj.edit")}">
         <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25ZM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>
       </button>`;
     row.querySelector("button").onclick = () => openSubjectEditor(s.id);
@@ -772,11 +799,11 @@ let editingColor = PALETTE[0];
 
 function openSubjectEditor(id) {
   const sem0 = activeSem();
-  if (!sem0) { toast("Crie um semestre primeiro."); return; }
-  if (!id && sem0.subjects.length >= 14) { toast("Limite de 14 matérias por semestre."); return; }
+  if (!sem0) { toast(t("subj.create_sem_first")); return; }
+  if (!id && sem0.subjects.length >= 14) { toast(t("subj.limit")); return; }
   editingSubjectId = id;
   const s = id ? activeSem().subjects.find(x => x.id === id) : null;
-  $("#subjectModalTitle").textContent = s ? "Editar matéria" : "Nova matéria";
+  $("#subjectModalTitle").textContent = s ? t("subj.edit") : t("subj.new");
   $("#subjName").value = s?.name || "";
   $("#subjProf").value = s?.prof || "";
   $("#subjEmail").value = s?.profEmail || "";
@@ -812,20 +839,20 @@ function meetingRow(m) {
   row.className = "meeting-row";
   const isCustom = typeof m.slot === "string" && m.slot.startsWith("c:");
   const wdOpts = [1, 2, 3, 4, 5, 6].map(w =>
-    `<option value="${w}" ${m.weekday === w ? "selected" : ""}>${WEEKDAYS[w]}</option>`).join("");
+    `<option value="${w}" ${m.weekday === w ? "selected" : ""}>${weekdayName(w)}</option>`).join("");
   let slotOpts = "", curShift = "";
   for (const sd of SLOT_DEFS) {
-    if (sd.shift !== curShift) { if (curShift) slotOpts += "</optgroup>"; slotOpts += `<optgroup label="${sd.shift}">`; curShift = sd.shift; }
-    slotOpts += `<option value="${sd.id}" ${m.slot === sd.id ? "selected" : ""}>${sd.label} (${sd.time})</option>`;
+    if (sd.shift !== curShift) { if (curShift) slotOpts += "</optgroup>"; slotOpts += `<optgroup label="${tShift(sd.shift)}">`; curShift = sd.shift; }
+    slotOpts += `<option value="${sd.id}" ${m.slot === sd.id ? "selected" : ""}>${tSlotLabel(sd.label)} (${sd.time})</option>`;
   }
-  slotOpts += `</optgroup><option value="custom" ${isCustom ? "selected" : ""}>Personalizado…</option>`;
+  slotOpts += `</optgroup><option value="custom" ${isCustom ? "selected" : ""}>${t("subj.custom_opt")}</option>`;
   let cStart = "08:00", cEnd = "09:40";
   if (isCustom) { const p = m.slot.slice(2).split("-"); cStart = p[0] || cStart; cEnd = p[1] || cEnd; }
   row.innerHTML = `
     <div class="meet-line">
       <select class="meet-wd">${wdOpts}</select>
       <select class="meet-slot">${slotOpts}</select>
-      <button class="icon-btn del-meet" type="button" aria-label="Remover">
+      <button class="icon-btn del-meet" type="button" aria-label="${t("subj.remove_meeting")}">
         <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Zm3-3h6l1 2h4v2H4V6h4l1-2Z"/></svg>
       </button>
     </div>
@@ -834,7 +861,7 @@ function meetingRow(m) {
       <span>–</span>
       <input type="time" class="meet-end" value="${cEnd}" />
     </div>
-    <input type="text" class="meet-room" placeholder="Sala (ex: 01-B2, LEIA 1)" value="${m.room ? esc(m.room) : ""}" />`;
+    <input type="text" class="meet-room" maxlength="40" placeholder="${t("subj.room_ph")}" value="${m.room ? esc(m.room) : ""}" />`;
   const slotSel = row.querySelector(".meet-slot");
   const custom = row.querySelector(".meet-custom");
   slotSel.onchange = () => { custom.hidden = slotSel.value !== "custom"; };
@@ -843,7 +870,7 @@ function meetingRow(m) {
 }
 
 function collectMeetings() {
-  return $$("#meetingList .meeting-row").map(r => {
+  return $$("#meetingList .meeting-row").slice(0, 20).map(r => {
     let slot = $(".meet-slot", r).value;
     if (slot === "custom") {
       const s = $(".meet-start", r).value || "08:00";
@@ -851,19 +878,20 @@ function collectMeetings() {
       slot = `c:${s}-${e}`;
       data.lastCustomTime = slot; // memoriza o último horário personalizado
     }
-    return { weekday: Number($(".meet-wd", r).value), slot, room: $(".meet-room", r).value.trim() };
+    return { weekday: Number($(".meet-wd", r).value), slot, room: clampText($(".meet-room", r).value.trim(), 40) };
   });
 }
 
 function saveSubject() {
-  const name = $("#subjName").value.trim();
-  if (!name) { toast("Dê um nome à matéria."); return; }
+  if (blockedOffline()) return;
+  const name = clampText($("#subjName").value.trim(), 80);
+  if (!name) { toast(t("subj.name_required")); return; }
   const sem = activeSem();
   const payload = {
     name,
-    prof: $("#subjProf").value.trim(),
-    profEmail: $("#subjEmail").value.trim(),
-    credits: Number($("#subjCredits").value),
+    prof: clampText($("#subjProf").value.trim(), 80),
+    profEmail: clampText($("#subjEmail").value.trim(), 120),
+    credits: Number($("#subjCredits").value) === 2 ? 2 : 4,
     color: editingColor,
     meetings: collectMeetings(),
   };
@@ -874,45 +902,55 @@ function saveSubject() {
   }
   saveData();
   closeModals(); renderAll();
-  toast("Matéria salva ✓");
-  showBackupReminder();
+  toast(t("subj.saved"));
 }
 
 async function deleteSubject() {
-  if (!editingSubjectId) return;
-  const ok = await uiConfirm("Excluir esta matéria? As faltas dela serão desconsideradas.", { danger: true, yesLabel: "Excluir" });
+  if (!editingSubjectId || blockedOffline()) return;
+  const ok = await uiConfirm(t("subj.delete_confirm"), { danger: true, yesLabel: t("subj.delete") });
   if (!ok) return;
   const sem = activeSem();
   sem.subjects = sem.subjects.filter(s => s.id !== editingSubjectId);
   saveData();
   closeModals(); renderAll();
-  showBackupReminder();
 }
 
 /* ---- Editor de semestre (modal customizado) ---- */
 let editingSemesterKey = null;
 function semNumberFromLabel(label) { return parseInt(label, 10) || 1; }
+/* rótulo do semestre montado no idioma atual (a partir de campos estruturados;
+   cai no parsing do label antigo para semestres criados antes do i18n) */
+function semParts(sem) {
+  if (sem && sem.num) return { num: sem.num, period: sem.period || "fev", year: sem.year || new Date().getFullYear() };
+  const num = semNumberFromLabel(sem && sem.label);
+  const year = sem && sem.start ? Number(sem.start.slice(0, 4)) : new Date().getFullYear();
+  const period = sem && sem.start && Number(sem.start.slice(5, 7)) <= 7 ? "fev" : "ago";
+  return { num, period, year };
+}
+function semShort(sem) { return t("sem.nth", { n: semParts(sem).num }); }
+function semRange(sem) { const p = semParts(sem); return t(p.period === "ago" ? "sem.period_aug_short" : "sem.period_feb_short") + " " + p.year; }
+function semDisplayLabel(sem) { return `${semShort(sem)} (${semRange(sem)})`; }
 
 function openSemesterEditor(key, welcome) {
-  if (!key && Object.keys(data.semesters).length >= 18) { toast("Limite de 18 semestres."); return; }
+  if (!key && Object.keys(data.semesters).length >= 18) { toast(t("sem.limit")); return; }
   editingSemesterKey = key;
   const sem = key ? data.semesters[key] : null;
   $("#semEditTitle").textContent = welcome
-    ? `Olá, ${cloudUsername || "bem-vindo"}! Qual seu semestre?`
-    : (sem ? "Editar semestre" : "Novo semestre");
+    ? t("sem.welcome", { name: cloudUsername || "USP" })
+    : (sem ? t("sem.edit") : t("sem.new"));
 
-  $("#semNumber").innerHTML = Array.from({ length: 18 }, (_, i) => `<option value="${i + 1}">${i + 1}º Semestre</option>`).join("");
+  $("#semNumber").innerHTML = Array.from({ length: 18 }, (_, i) => `<option value="${i + 1}">${t("sem.nth", { n: i + 1 })}</option>`).join("");
   const yNow = new Date().getFullYear();
   const ySel = $("#semYear"); ySel.innerHTML = "";
   for (let y = yNow - 2; y <= yNow + 5; y++) ySel.innerHTML += `<option value="${y}">${y}</option>`;
 
   if (sem) {
-    $("#semNumber").value = String(semNumberFromLabel(sem.label));
-    $("#semPeriod").value = (sem.start && Number(sem.start.slice(5, 7)) <= 7) ? "fev" : "ago";
+    $("#semNumber").value = String(semParts(sem).num);
+    $("#semPeriod").value = semParts(sem).period;
     ySel.value = sem.start ? sem.start.slice(0, 4) : String(yNow);
     $("#semDeleteBtn").hidden = false;
   } else {
-    const nums = Object.values(data.semesters).map(s => semNumberFromLabel(s.label));
+    const nums = Object.values(data.semesters).map(s => semParts(s).num);
     $("#semNumber").value = String(nums.length ? Math.min(18, Math.max(...nums) + 1) : 1);
     $("#semPeriod").value = "fev";
     ySel.value = String(yNow);
@@ -928,17 +966,19 @@ function periodDates(period, year) {
 }
 
 function saveSemesterFromModal() {
+  if (blockedOffline()) return;
   const num = Number($("#semNumber").value);
   const period = $("#semPeriod").value;
   const year = Number($("#semYear").value);
   const { start, end } = periodDates(period, year);
+  // label canônico (pt) só como reserva; a exibição usa semDisplayLabel() no idioma atual
   const label = `${num}º Semestre (${period === "ago" ? "Ago - Dez" : "Fev - Jun"} ${year})`;
   if (editingSemesterKey) {
-    Object.assign(data.semesters[editingSemesterKey], { label, start, end });
+    Object.assign(data.semesters[editingSemesterKey], { label, start, end, num, period, year });
   } else {
     let key = `${year}.${period === "fev" ? 1 : 2}`;
     while (data.semesters[key]) key += "x";
-    data.semesters[key] = { label, start, end, subjects: [] };
+    data.semesters[key] = { label, start, end, num, period, year, subjects: [] };
     data.occ[key] = {}; data.marks[key] = {}; data.notes[key] = {};
     data.activeSemester = key;
   }
@@ -947,12 +987,12 @@ function saveSemesterFromModal() {
   calRef = null;
   closeModals();
   renderAll();
-  toast(editingSemesterKey ? "Semestre atualizado ✓" : "Semestre criado ✓");
-  showBackupReminder();
+  toast(editingSemesterKey ? t("sem.updated") : t("sem.created"));
 }
 
 async function deleteSemester(key) {
-  const ok = await uiConfirm(`Excluir "${data.semesters[key].label}" e todas as faltas dele? Não pode ser desfeito.`, { danger: true, yesLabel: "Excluir" });
+  if (blockedOffline()) return;
+  const ok = await uiConfirm(t("sem.delete_confirm", { label: semDisplayLabel(data.semesters[key]) }), { danger: true, yesLabel: t("sem.delete") });
   if (!ok) return;
   delete data.semesters[key];
   delete data.occ[key]; delete data.marks[key]; delete data.notes[key];
@@ -960,13 +1000,12 @@ async function deleteSemester(key) {
   saveData();
   updateSemesterButton();
   calRef = null; renderAll();
-  toast("Semestre excluído");
-  showBackupReminder();
+  toast(t("sem.deleted"));
 }
 
 /* ---- Diálogos personalizados (substituem alert/confirm/prompt do SO) ---- */
-let _confirmCb = null, _confirmIsPrompt = false;
-function _openConfirm({ title = "Confirmar", message, yesLabel = "Confirmar", danger = false, prompt = false, placeholder = "" }) {
+let _confirmCb = null, _confirmIsPrompt = false, _cdTimer = null;
+function _openConfirm({ title = t("confirm.title"), message, yesLabel = t("confirm.yes"), danger = false, prompt = false, placeholder = "", countdown = 0 }) {
   return new Promise(resolve => {
     _confirmCb = resolve; _confirmIsPrompt = prompt;
     $("#confirmTitle").textContent = title;
@@ -974,8 +1013,18 @@ function _openConfirm({ title = "Confirmar", message, yesLabel = "Confirmar", da
     const inp = $("#confirmInput");
     inp.hidden = !prompt; inp.value = ""; inp.placeholder = placeholder;
     const yes = $("#confirmYes");
-    yes.textContent = yesLabel;
     yes.classList.toggle("btn-danger-fill", danger);
+    clearInterval(_cdTimer);
+    if (countdown > 0) {
+      let left = countdown;
+      yes.disabled = true;
+      yes.textContent = `${yesLabel} (${left})`;
+      _cdTimer = setInterval(() => {
+        left--;
+        if (left <= 0) { clearInterval(_cdTimer); yes.disabled = false; yes.textContent = yesLabel; }
+        else yes.textContent = `${yesLabel} (${left})`;
+      }, 1000);
+    } else { yes.disabled = false; yes.textContent = yesLabel; }
     showModal("#confirmModal");
     if (prompt) setTimeout(() => inp.focus(), 60);
   });
@@ -983,41 +1032,15 @@ function _openConfirm({ title = "Confirmar", message, yesLabel = "Confirmar", da
 function uiConfirm(message, opts = {}) { return _openConfirm({ message, ...opts }); }
 function uiPrompt(message, opts = {}) { return _openConfirm({ message, prompt: true, ...opts }); }
 function resolveConfirm(val) {
+  clearInterval(_cdTimer);
   $("#confirmModal").hidden = true;
   const cb = _confirmCb; _confirmCb = null;
   if (cb) cb(val);
 }
 
 /* ---- Backup ---- */
-function exportData() {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "m87-backup.json"; // nome fixo: substitui o backup anterior em vez de acumular
-  a.click();
-  URL.revokeObjectURL(url);
-}
-function importData(file) {
-  const reader = new FileReader();
-  reader.onload = async () => {
-    try {
-      const imported = JSON.parse(reader.result);
-      if (!imported.semesters) throw new Error("arquivo inválido");
-      const ok = await uiConfirm("Importar vai substituir TODOS os dados atuais. Continuar?", { danger: true, yesLabel: "Importar" });
-      if (!ok) return;
-      data = migrate(imported);
-      saveData();
-      updateSemesterButton();
-      calRef = null; closeModals(); renderAll();
-      toast("Dados importados ✓");
-    } catch (e) { toast("Arquivo inválido."); }
-  };
-  reader.readAsText(file);
-}
-
 async function wipeAllData() {
-  const ok = await uiConfirm("Apagar TODOS os dados (matérias, faltas, semestres)? Não pode ser desfeito.", { danger: true, yesLabel: "Apagar tudo" });
+  const ok = await uiConfirm(t("acc.wipe_confirm"), { danger: true, yesLabel: t("acc.wipe_yes"), countdown: 10 });
   if (!ok) return;
   data = emptyData();
   saveData();
@@ -1026,25 +1049,13 @@ async function wipeAllData() {
   closeModals();
   renderAll();
   renderSettings();
-  toast("Dados apagados.");
+  toast(t("acc.wiped"));
   if (cloudUserId) openSemesterEditor(null, true);
 }
 
 function openAbout() {
   $("#aboutVersion").textContent = "v" + APP_VERSION;
   showModal("#aboutModal");
-}
-
-/* ============================================================
-   LEMBRETE DE BACKUP
-   ============================================================ */
-function showBackupReminder() {
-  const el = $("#backupReminder");
-  if (el) el.hidden = false;
-}
-function hideBackupReminder() {
-  const el = $("#backupReminder");
-  if (el) el.hidden = true;
 }
 
 /* ============================================================
@@ -1056,31 +1067,28 @@ function closeModals() {
   if (_confirmCb) { const cb = _confirmCb; _confirmCb = null; cb(_confirmIsPrompt ? null : false); }
 }
 
-function shortSemLabel(label) { return (label || "").split(" (")[0] || label; }
-
 function updateSemesterButton() {
   const el = $("#semesterBtnLabel");
   if (!el) return;
   const sem = activeSem();
-  el.textContent = sem ? shortSemLabel(sem.label) : "Sem semestre";
+  el.textContent = sem ? semShort(sem) : t("header.no_semester");
 }
 
 function openSemesterPicker() {
   const list = $("#semesterPickerList");
   list.innerHTML = "";
   for (const [key, sem] of Object.entries(data.semesters)) {
-    const detail = sem.label.includes("(")
-      ? sem.label.slice(sem.label.indexOf("(") + 1).replace(")", "").trim() : "";
+    const detail = semRange(sem);
     const row = document.createElement("div");
     row.className = "picker-row";
     const b = document.createElement("button");
     b.className = "picker-item" + (key === data.activeSemester ? " active" : "");
-    b.innerHTML = `<span class="pi-name">${esc(shortSemLabel(sem.label))}</span>` +
+    b.innerHTML = `<span class="pi-name">${esc(semShort(sem))}</span>` +
                   (detail ? `<span class="pi-detail">${esc(detail)}</span>` : "");
     b.onclick = () => { selectSemester(key); closeModals(); };
     const edit = document.createElement("button");
     edit.className = "icon-btn picker-edit";
-    edit.setAttribute("aria-label", "Editar semestre");
+    edit.setAttribute("aria-label", t("sem.edit_aria"));
     edit.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25ZM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg>`;
     edit.onclick = () => { closeModals(); openSemesterEditor(key); };
     row.appendChild(b); row.appendChild(edit);
@@ -1089,7 +1097,7 @@ function openSemesterPicker() {
   const create = document.createElement("button");
   create.className = "btn btn-sm btn-ghost";
   create.style.marginTop = "4px";
-  create.textContent = "+ Novo semestre";
+  create.textContent = t("sem.new_semester");
   create.onclick = () => { closeModals(); openSemesterEditor(null); };
   list.appendChild(create);
   showModal("#semesterModal");
@@ -1126,6 +1134,36 @@ function switchView(view) {
 }
 
 function renderAll() { renderDashboard(); renderCalendar(); renderSubjectsTab(); }
+
+/* ---------- Idioma ---------- */
+function applyLang() {
+  document.documentElement.lang = getLang() === "pt" ? "pt-BR" : getLang();
+  applyStaticI18n();
+  // cabeçalho do calendário (seg..dom = dias 1..7)
+  $$(".cal-weekdays span").forEach((el, i) => (el.textContent = weekdayShort(i + 1).toLowerCase()));
+  $$("#langSeg .lang-btn").forEach(b => b.classList.toggle("active", b.dataset.lang === getLang()));
+  if ($("#aboutVersion")) $("#aboutVersion").textContent = "v" + APP_VERSION;
+  if (!$("#auth").hidden) setAuthMode(authMode);     // reaplica os rótulos do login
+  updateSemesterButton();
+  if (cloudUserId) renderAccount();
+  renderAll();
+}
+function setLanguage(l) {
+  setLang(l);
+  applyLang();
+  toast(t("misc.lang_changed"));
+}
+
+/* ---------- Menu lateral recolhível (desktop) ---------- */
+function applyNavCollapsed(state) {
+  document.documentElement.classList.toggle("nav-collapsed", !!state);
+  localStorage.setItem("m87.navCollapsed", state ? "1" : "0");
+  const btn = $("#navCollapse");
+  if (btn) btn.setAttribute("aria-label", t(state ? "nav.expand" : "nav.collapse"));
+}
+function toggleNav() {
+  applyNavCollapsed(!document.documentElement.classList.contains("nav-collapsed"));
+}
 
 /* ============================================================
    EVENTOS
@@ -1188,17 +1226,14 @@ function bindEvents() {
   $("#confirmNo").onclick = () => resolveConfirm(_confirmIsPrompt ? null : false);
   $("#confirmInput").addEventListener("keydown", e => { if (e.key === "Enter") $("#confirmYes").click(); });
 
-  $("#exportBtn").onclick = exportData;
-  $("#importBtn").onclick = () => $("#importFile").click();
-  $("#importFile").onchange = e => e.target.files[0] && importData(e.target.files[0]);
   $("#wipeBtn").onclick = wipeAllData;
   $("#aboutBtn").onclick = openAbout;
   $("#accountCard").onclick = openAccountModal;
   $("#deleteAccountBtn").onclick = deleteAccount;
   $("#creditViwctor").onclick = () => window.open("https://github.com/viwctor/m87", "_blank", "noopener");
-
-  $("#brBackup").onclick = () => { hideBackupReminder(); exportData(); };
-  $("#brDismiss").onclick = hideBackupReminder;
+  $("#retryConn").onclick = updateConn;
+  $$("#langSeg .lang-btn").forEach(b => b.onclick = () => setLanguage(b.dataset.lang));
+  $("#navCollapse").onclick = toggleNav;
 
   // deslizar troca de guia (mobile) — funciona em qualquer área, exceto o grid de datas
   const order = ["subjects", "dashboard", "calendar", "settings"];
@@ -1245,7 +1280,7 @@ function bindEvents() {
    AUTENTICAÇÃO / NUVEM (Supabase) — opcional
    ============================================================ */
 let authMode = "login";
-function authMsg(t) { $("#authMsg").textContent = t || ""; }
+function authMsg(msg) { $("#authMsg").textContent = msg || ""; }
 
 function showAuth() {
   $("#auth").hidden = false;
@@ -1254,41 +1289,63 @@ function showAuth() {
 function setAuthMode(mode) {
   authMode = mode;
   $("#authUsername").hidden = mode !== "signup";
-  $("#authPrimary").textContent = mode === "login" ? "Entrar" : "Criar conta";
-  $("#authSecondary").textContent = mode === "login" ? "Criar conta" : "Já tenho conta";
+  $("#authPrimary").textContent = mode === "login" ? t("auth.enter") : t("auth.create");
+  $("#authSecondary").textContent = mode === "login" ? t("auth.create") : t("auth.have");
   authMsg("");
+}
+
+/* traduz as mensagens de erro do Supabase (vêm em inglês) para o idioma atual */
+function translateAuthError(e) {
+  const msg = ((e && (e.message || e.error_description)) || "") + "";
+  const code = (e && e.code) || "";
+  const low = msg.toLowerCase();
+  if (low.includes("invalid login") || code === "invalid_credentials") return t("auth.invalid");
+  if (low.includes("rate limit") || code === "over_email_send_rate_limit" || code === "over_request_rate_limit") return t("auth.rate");
+  if (low.includes("already registered") || code === "user_already_exists") return t("auth.exists");
+  if (low.includes("at least 6") || low.includes("password should be")) return t("auth.pass_min");
+  if (low.includes("not confirmed") || code === "email_not_confirmed") return t("auth.not_confirmed");
+  if (low.includes("usp")) return t("auth.usp_only"); // exceção do gatilho do banco
+  return t("auth.generic");
 }
 
 async function doAuthPrimary() {
   const email = $("#authEmail").value.trim();
   const pw = $("#authPassword").value;
-  if (!email || !pw) { authMsg("Preencha e-mail e senha."); return; }
-  if (authMode === "signup" && pw.length < 6) { authMsg("A senha precisa ter ao menos 6 caracteres."); return; }
-  authMsg("Aguarde…");
+  if (!email || !pw) { authMsg(t("auth.fill")); return; }
+  if (authMode === "signup" && pw.length < 6) { authMsg(t("auth.pass_min")); return; }
+  authMsg(t("auth.wait"));
   try {
     if (authMode === "login") {
       const res = await M87Cloud.signIn(email, pw);
       await enterApp(res.user);
     } else {
-      const username = $("#authUsername").value.trim();
-      if (!username) { authMsg("Escolha um nome de usuário."); return; }
-      if (!/@usp\.br$/i.test(email)) { authMsg("Use seu e-mail institucional da USP (@usp.br)."); return; }
+      const username = clampText($("#authUsername").value.trim(), 24);
+      if (!username) { authMsg(t("auth.choose_user")); return; }
+      if (!/@([a-z0-9-]+\.)*usp\.br$/i.test(email)) { authMsg(t("auth.usp_only")); return; }
       const res = await M87Cloud.signUp(email, pw, username);
+      // O Supabase devolve "sucesso" mesmo quando o e-mail já existe (proteção contra
+      // descoberta de contas): nesse caso, user.identities vem vazio.
+      const jaExiste = res.user && Array.isArray(res.user.identities) && res.user.identities.length === 0;
+      if (jaExiste) { setAuthMode("login"); authMsg(t("auth.exists")); return; }
       if (res.session && res.user) await enterApp(res.user);
-      else { setAuthMode("login"); authMsg("Conta criada! Confirme pelo link enviado ao seu e-mail e depois entre."); }
+      else { setAuthMode("login"); authMsg(t("auth.created")); }
     }
   } catch (e) {
-    authMsg("Erro: " + (e.message || e));
+    authMsg(translateAuthError(e));
   }
 }
+let _lastForgot = 0;
 async function doForgot() {
   const email = $("#authEmail").value.trim();
-  if (!email) { authMsg("Digite seu e-mail para recuperar a senha."); return; }
-  try { await M87Cloud.resetPassword(email); authMsg("Enviamos um link de recuperação para o seu e-mail."); }
-  catch (e) { authMsg("Erro: " + (e.message || e)); }
+  if (!email) { authMsg(t("auth.forgot_need_email")); return; }
+  // evita disparar vários e-mails seguidos (e o erro "rate limit" do Supabase)
+  if (Date.now() - _lastForgot < 60000) { authMsg(t("auth.rate")); return; }
+  _lastForgot = Date.now();
+  try { await M87Cloud.resetPassword(email); authMsg(t("auth.forgot_sent")); }
+  catch (e) { authMsg(translateAuthError(e)); }
 }
 async function doLogout() {
-  const ok = await uiConfirm("Sair da conta? Seus dados continuam salvos na nuvem.", { yesLabel: "Sair" });
+  const ok = await uiConfirm(t("acc.logout_confirm"), { yesLabel: t("acc.logout_yes") });
   if (!ok) return;
   try { await M87Cloud.signOut(); } catch (e) { console.error(e); }
   cloudUserId = null;
@@ -1299,11 +1356,11 @@ async function doLogout() {
 }
 async function handlePasswordRecovery() {
   $("#auth").hidden = false;
-  const np = await uiPrompt("Defina a nova senha (mínimo 6 caracteres):", { yesLabel: "Salvar", placeholder: "Nova senha" });
+  const np = await uiPrompt(t("auth.new_pass"), { yesLabel: t("auth.save"), placeholder: t("auth.new_pass_ph") });
   if (!np) return;
-  if (np.length < 6) { toast("Senha muito curta."); return; }
-  try { await M87Cloud.updatePassword(np); toast("Senha atualizada! Entre com a nova senha."); }
-  catch (e) { toast("Erro: " + (e.message || e)); }
+  if (np.length < 6) { toast(t("auth.pass_too_short")); return; }
+  try { await M87Cloud.updatePassword(np); toast(t("auth.pass_updated")); }
+  catch (e) { toast(translateAuthError(e)); }
 }
 
 async function enterApp(user) {
@@ -1333,6 +1390,7 @@ async function enterApp(user) {
   $("#auth").hidden = true;
   hideSplash();
   if (!activeSem()) openSemesterEditor(null, true);    // boas-vindas: escolher o semestre
+  if ("Notification" in window && Notification.permission === "default") { try { Notification.requestPermission(); } catch (e) {} }
   try { M87Cloud.subscribe(user.id, handleRealtime); } catch (e) { console.error(e); }
 }
 
@@ -1348,7 +1406,7 @@ function handleRealtime(row) {
     calRef = null;
     renderAll();
     renderAccount();
-    toast("Atualizado de outro aparelho ⟳");
+    toast(t("misc.updated_other"));
   } catch (e) { console.error("realtime", e); }
 }
 
@@ -1389,17 +1447,28 @@ async function cloudInit() {
   else setTimeout(() => { hideSplash(); showAuth(); }, 1100);
 }
 
-function init() {
+async function init() {
   bindEvents();
   bindAuthEvents();
   registerSW();
-  if (window.M87Cloud && M87Cloud.enabled()) {
-    cloudInit();                       // tem login: tela de conta + dados na nuvem
-  } else {
-    updateSemesterButton();             // modo local (sem login)
-    renderAll();
-    applyHashView();
-    setTimeout(hideSplash, 1100);
+  applyLang();
+  applyNavCollapsed(localStorage.getItem("m87.navCollapsed") === "1");
+  setConn(navigator.onLine ? "online" : "offline");
+  window.addEventListener("online", updateConn);
+  window.addEventListener("offline", () => setConn("offline"));
+  if (typeof M87Cloud !== "undefined" && M87Cloud.configured()) {
+    const ok = await M87Cloud.ensureLib();
+    if (ok) { cloudInit(); return; }   // login + dados na nuvem
+    // configurado, mas a biblioteca não carregou: mostra o login com aviso (não usa o seed)
+    hideSplash();
+    showAuth();
+    authMsg(t("auth.lib_fail"));
+    return;
   }
+  // modo local (nuvem não configurada)
+  updateSemesterButton();
+  renderAll();
+  applyHashView();
+  setTimeout(hideSplash, 1100);
 }
 init();
