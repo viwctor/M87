@@ -26,6 +26,7 @@ const I18N = {
     "auth.invalid": "E-mail ou senha incorretos.",
     "auth.not_confirmed": "Confirme seu e-mail antes de entrar.",
     "auth.generic": "Algo deu errado. Tente novamente.",
+    "auth.email_send_fail": "Não foi possível enviar o e-mail agora. Verifique a configuração de envio (SMTP) ou tente novamente em alguns minutos.",
     "auth.lib_fail": "Não foi possível carregar o serviço de login. Verifique a conexão e recarregue a página.",
     "auth.new_pass": "Defina a nova senha (mínimo 6 caracteres):",
     "auth.pass_updated": "Senha atualizada! Entre com a nova senha.",
@@ -196,7 +197,7 @@ const I18N = {
     "about.made_with": "Desenvolvido com",
     "about.made_by": "por",
     "about.changelog":
-      "Novidades 0.9:\n   Sincronização em tempo real entre aparelhos\n   Indicador de conexão (online/instável/offline)\n   Idiomas: português, inglês e espanhol\n   Layout desktop em duas colunas com menu recolhível\n   Cards por dia agrupando as matérias\n   Confirmações com contagem regressiva\n\nNovidades 0.8:\n   Login com e-mail USP e dados na nuvem\n   Guia Matérias (info por dia, sala, professor)\n   Criação guiada de semestres (até 18)\n   Horários: manhã, tarde, noite, integral e personalizado\n   Resumo com total de créditos\n",
+      "Versão 1.0:\n   E-mails de confirmação e recuperação personalizados\n   Mensagens de erro mais claras no login\n   Mais estabilidade e ajustes finos\n\nNovidades 0.9:\n   Sincronização em tempo real entre aparelhos\n   Indicador de conexão (online/instável/offline)\n   Idiomas: português, inglês e espanhol\n   Layout desktop em duas colunas com menu recolhível\n   Cards por dia agrupando as matérias\n   Confirmações com contagem regressiva\n\nNovidades 0.8:\n   Login com e-mail USP e dados na nuvem\n   Guia Matérias (info por dia, sala, professor)\n   Criação guiada de semestres (até 18)\n   Horários: manhã, tarde, noite, integral e personalizado\n   Resumo com total de créditos\n",
 
     /* Misc */
     "misc.copied_email": "E-mail copiado ✓",
@@ -229,6 +230,7 @@ const I18N = {
     "auth.invalid": "Incorrect e-mail or password.",
     "auth.not_confirmed": "Confirm your e-mail before signing in.",
     "auth.generic": "Something went wrong. Please try again.",
+    "auth.email_send_fail": "We couldn't send the e-mail right now. Check the e-mail (SMTP) settings or try again in a few minutes.",
     "auth.lib_fail": "Could not load the login service. Check your connection and reload the page.",
     "auth.new_pass": "Set the new password (minimum 6 characters):",
     "auth.pass_updated": "Password updated! Sign in with the new password.",
@@ -384,7 +386,7 @@ const I18N = {
     "about.made_with": "Built with",
     "about.made_by": "by",
     "about.changelog":
-      "What's new in 0.9:\n   Real-time sync across devices\n   Connection indicator (online/unstable/offline)\n   Languages: Portuguese, English and Spanish\n   Two-column desktop layout with collapsible menu\n   Per-day cards grouping subjects\n   Confirmations with countdown\n\nWhat's new in 0.8:\n   Login with USP e-mail and cloud data\n   Subjects tab (info per day, room, professor)\n   Guided semester creation (up to 18)\n   Time slots: morning, afternoon, evening, full-time and custom\n   Summary with total credits\n",
+      "Version 1.0:\n   Personalized confirmation and recovery e-mails\n   Clearer login error messages\n   More stability and polish\n\nWhat's new in 0.9:\n   Real-time sync across devices\n   Connection indicator (online/unstable/offline)\n   Languages: Portuguese, English and Spanish\n   Two-column desktop layout with collapsible menu\n   Per-day cards grouping subjects\n   Confirmations with countdown\n\nWhat's new in 0.8:\n   Login with USP e-mail and cloud data\n   Subjects tab (info per day, room, professor)\n   Guided semester creation (up to 18)\n   Time slots: morning, afternoon, evening, full-time and custom\n   Summary with total credits\n",
 
     "misc.copied_email": "E-mail copied ✓",
     "misc.offline": "No network connection.",
@@ -416,6 +418,7 @@ const I18N = {
     "auth.invalid": "Correo o contraseña incorrectos.",
     "auth.not_confirmed": "Confirma tu correo antes de entrar.",
     "auth.generic": "Algo salió mal. Inténtalo de nuevo.",
+    "auth.email_send_fail": "No se pudo enviar el correo ahora. Revisa la configuración de envío (SMTP) o inténtalo de nuevo en unos minutos.",
     "auth.lib_fail": "No se pudo cargar el servicio de inicio de sesión. Revisa la conexión y recarga la página.",
     "auth.new_pass": "Define la nueva contraseña (mínimo 6 caracteres):",
     "auth.pass_updated": "¡Contraseña actualizada! Entra con la nueva contraseña.",
@@ -571,7 +574,7 @@ const I18N = {
     "about.made_with": "Desarrollado con",
     "about.made_by": "por",
     "about.changelog":
-      "Novedades 0.9:\n   Sincronización en tiempo real entre dispositivos\n   Indicador de conexión (en línea/inestable/sin conexión)\n   Idiomas: portugués, inglés y español\n   Diseño de escritorio en dos columnas con menú plegable\n   Tarjetas por día agrupando las materias\n   Confirmaciones con cuenta regresiva\n\nNovedades 0.8:\n   Inicio de sesión con correo USP y datos en la nube\n   Pestaña Materias (info por día, sala, profesor)\n   Creación guiada de semestres (hasta 18)\n   Horarios: mañana, tarde, noche, completo y personalizado\n   Resumen con total de créditos\n",
+      "Versión 1.0:\n   Correos de confirmación y recuperación personalizados\n   Mensajes de error más claros en el inicio de sesión\n   Más estabilidad y ajustes finos\n\nNovedades 0.9:\n   Sincronización en tiempo real entre dispositivos\n   Indicador de conexión (en línea/inestable/sin conexión)\n   Idiomas: portugués, inglés y español\n   Diseño de escritorio en dos columnas con menú plegable\n   Tarjetas por día agrupando las materias\n   Confirmaciones con cuenta regresiva\n\nNovedades 0.8:\n   Inicio de sesión con correo USP y datos en la nube\n   Pestaña Materias (info por día, sala, profesor)\n   Creación guiada de semestres (hasta 18)\n   Horarios: mañana, tarde, noche, completo y personalizado\n   Resumen con total de créditos\n",
 
     "misc.copied_email": "Correo copiado ✓",
     "misc.offline": "Sin conexión de red.",

@@ -1,8 +1,22 @@
 # Changelog
 
 All notable changes to this project are documented here.
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project uses informal pre-release versioning while in beta.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [1.0] - 2026-06-14
+
+First stable release.
+
+### Added
+- Personalized confirmation and password-recovery e-mails, with the M87 banner and the recipient's username.
+- Clearer, translated authentication error messages, including a dedicated message for e-mail delivery failures.
+
+### Changed
+- The app now starts empty for every account; the schedule comes from the cloud after login (no bundled sample data).
+- Cloud saves retry a bounded number of times instead of indefinitely.
+
+### Fixed
+- Generic "something went wrong" message on sign-up and password reset now points to the real cause (usually e-mail delivery).
 
 ## [0.9 (beta)] - 2026-06-13
 

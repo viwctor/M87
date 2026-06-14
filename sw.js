@@ -1,5 +1,5 @@
 /* M87 — Service Worker (offline-first app shell) */
-const CACHE = "m87-v1.2";
+const CACHE = "m87-v1.0";
 const ASSETS = [
   "./",
   "./index.html",

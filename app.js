@@ -22,7 +22,7 @@
    ============================================================ */
 
 const STORE_KEY = "m87.data";
-const APP_VERSION = "0.9 (beta)";
+const APP_VERSION = "1.0";
 
 /* id único deste aparelho (para ignorar o eco das próprias escritas no tempo real) */
 const DEVICE_ID = (() => {
@@ -71,57 +71,12 @@ function slotInfo(id) {
 
 /* dias da semana: usar weekdayName(wd) / weekdayShort(wd) do i18n.js */
 
-/* ---------- Dados iniciais: grade 2026.1 (noite) ---------- */
-function seedData() {
-  const d = {
-    version: 2,
-    activeSemester: "2026.1",
-    semesters: {
-      "2026.1": {
-        label: "3º Semestre (Fev - Jun 2026)",
-        start: "2026-02-02",
-        end: "2026-06-30",
-        subjects: [
-          { id: "rad1604", code: "RAD1604", name: "Desenvolvimento de Sistemas de Informação", prof: "Ildeberto Aparecido Rodello", credits: 4, color: "#ff9e2c",
-            meetings: [{ weekday: 1, slot: "n1" }, { weekday: 3, slot: "n2" }] },
-          { id: "rad1307", code: "RAD1307", name: "Comportamento Organizacional", prof: "Clarissa Dourado Freire", credits: 4, color: "#ff5e3a",
-            meetings: [{ weekday: 1, slot: "n2" }, { weekday: 2, slot: "n2" }] },
-          { id: "rad1618", code: "RAD1618", name: "Direito Tributário", prof: "Alexandre Ganan de Brites Figueiredo", credits: 2, color: "#ffd23f",
-            meetings: [{ weekday: 2, slot: "n1" }] },
-          { id: "rad1301", code: "RAD1301", name: "Matemática Financeira", prof: "Tabajara Pimenta Júnior", credits: 4, color: "#f7773d",
-            meetings: [{ weekday: 3, slot: "n1" }, { weekday: 4, slot: "n2" }] },
-          { id: "rec2403", code: "REC2403", name: "Introdução à Economia Brasileira", prof: "Marcio Bobik Braga", credits: 4, color: "#ffb347",
-            meetings: [{ weekday: 4, slot: "n1" }, { weekday: 5, slot: "n2" }] },
-          { id: "rad1408", code: "RAD1408", name: "Estatística Aplicada à Administração", prof: "Evandro Marcos Saidel Ribeiro", credits: 2, color: "#e8552d",
-            meetings: [{ weekday: 5, slot: "n1" }] },
-        ],
-      },
-      "2026.2": {
-        label: "4º Semestre (Ago - Dez 2026)",
-        start: "2026-08-03",
-        end: "2026-12-18",
-        subjects: [
-          { id: "s_arh",   code: "", name: "Administração de Recursos Humanos", prof: "", credits: 4, color: "#ff9e2c", meetings: [] },
-          { id: "s_anfin", code: "", name: "Análise Financeira", prof: "", credits: 2, color: "#ffd23f", meetings: [] },
-          { id: "s_mkt",   code: "", name: "Marketing I", prof: "", credits: 4, color: "#ff5e3a", meetings: [] },
-          { id: "s_ops",   code: "", name: "Administração de Operações I", prof: "", credits: 4, color: "#f7773d", meetings: [] },
-          { id: "s_dcom",  code: "", name: "Direito Comercial", prof: "", credits: 2, color: "#e8552d", meetings: [] },
-        ],
-      },
-    },
-    occ: { "2026.1": {}, "2026.2": {} },
-    marks: { "2026.1": {}, "2026.2": {} },
-    notes: { "2026.1": {}, "2026.2": {} },
-  };
-  Object.values(d.semesters).forEach(sem =>
-    sem.subjects.forEach((s, i) => { s.color = PALETTE[i % PALETTE.length]; }));
-  return d;
-}
-
-/* estado vazio (novo usuário escolhe o semestre) */
+/* estado vazio: todo usuário (novo ou deslogado) começa sem semestre e escolhe o seu */
 function emptyData() {
   return { version: 2, activeSemester: null, semesters: {}, occ: {}, marks: {}, notes: {}, lastCustomTime: "" };
 }
+/* compatibilidade: o app sempre inicia vazio (a grade real vem da nuvem após o login) */
+function seedData() { return emptyData(); }
 
 /* ---------- Estado ---------- */
 let data = loadData();
@@ -311,15 +266,22 @@ function blockedOffline() {
   if (cloudUserId && !navigator.onLine) { setConn("offline"); toast(t("misc.offline")); return true; }
   return false;
 }
-/* envia ao Supabase com retry; mantém a bolinha amarela enquanto tenta */
+/* envia ao Supabase com retry limitado; mantém a bolinha amarela enquanto tenta */
+let _pushTries = 0;
 function pushCloud() {
   if (!cloudUserId) return;
   if (!navigator.onLine) { setConn("offline"); return; }
   setConn("saving");
   data._device = DEVICE_ID;
   M87Cloud.saveData(cloudUserId, data)
-    .then(() => setConn("online"))
-    .catch(() => { setConn(navigator.onLine ? "saving" : "offline"); clearTimeout(cloudSaveTimer); cloudSaveTimer = setTimeout(pushCloud, 4000); });
+    .then(() => { setConn("online"); _pushTries = 0; })
+    .catch(() => {
+      setConn(navigator.onLine ? "saving" : "offline");
+      clearTimeout(cloudSaveTimer);
+      // tenta de novo por ~24s; depois desiste (a próxima edição reinicia o ciclo)
+      if (++_pushTries <= 6) cloudSaveTimer = setTimeout(pushCloud, 4000);
+      else _pushTries = 0;
+    });
 }
 
 /* ============================================================
@@ -1301,9 +1263,11 @@ function translateAuthError(e) {
   const low = msg.toLowerCase();
   if (low.includes("invalid login") || code === "invalid_credentials") return t("auth.invalid");
   if (low.includes("rate limit") || code === "over_email_send_rate_limit" || code === "over_request_rate_limit") return t("auth.rate");
-  if (low.includes("already registered") || code === "user_already_exists") return t("auth.exists");
-  if (low.includes("at least 6") || low.includes("password should be")) return t("auth.pass_min");
+  if (low.includes("already registered") || low.includes("already been registered") || code === "user_already_exists" || code === "email_exists") return t("auth.exists");
+  if (low.includes("at least 6") || low.includes("password should be") || code === "weak_password") return t("auth.pass_min");
   if (low.includes("not confirmed") || code === "email_not_confirmed") return t("auth.not_confirmed");
+  // falha no envio do e-mail (SMTP/Brevo mal configurado, remetente não verificado, etc.)
+  if (low.includes("sending") || low.includes("smtp") || (low.includes("email") && low.includes("error")) || code === "unexpected_failure") return t("auth.email_send_fail");
   if (low.includes("usp")) return t("auth.usp_only"); // exceção do gatilho do banco
   return t("auth.generic");
 }
