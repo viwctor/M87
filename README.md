@@ -22,11 +22,11 @@ across devices.
 
 ## Screenshots
 
-> Add your images to a `docs/` folder and they render here automatically (see [Adding media](#adding-media)).
-
-| Absences (dashboard) | Calendar | Subjects |
+| Absences | Calendar | Subjects |
 | :---: | :---: | :---: |
-| ![Dashboard](docs/dashboard.png) | ![Calendar](docs/calendar.png) | ![Subjects](docs/subjects.png) |
+| ![Absences tab](docs/dashboard.png) | ![Calendar tab](docs/calendar.png) | ![Subjects tab](docs/subjects.png) |
+
+## Demo
 
 <div align="center">
 
@@ -194,17 +194,6 @@ so the app works equally at a domain root or a sub-path.
 - [ ] Reminders before reaching an absence limit
 - [ ] Optional light theme
 - [ ] Advanced analytics dashboard
-
-## Adding media
-
-GitHub renders standard Markdown images, so nothing in the code breaks. Images are files
-referenced by relative path:
-
-1. Create a `docs/` folder in the repository root.
-2. Add `dashboard.png`, `calendar.png`, `subjects.png` and `demo.gif`.
-3. Commit them. The links in the Screenshots section fill in automatically.
-
-Until the files exist, the image links simply do not load and cause no error.
 
 ## License
 
