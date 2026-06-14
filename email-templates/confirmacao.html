@@ -1,0 +1,63 @@
+<!-- ============================================================
+     M87 — Template de e-mail: CONFIRMAÇÃO DE CADASTRO
+     Cole este HTML em: Supabase → Authentication → Email Templates → "Confirm signup"
+     Assunto sugerido: Confirme seu e-mail no M87
+     Variáveis usadas: {{ .ConfirmationURL }} e {{ .Data.username }}
+     ============================================================ -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0;padding:24px 0;background:#050507;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#0f0f14;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;">
+
+        <!-- Banner -->
+        <tr>
+          <td align="center" bgcolor="#0b0b0f" style="background:#0b0b0f;background:linear-gradient(135deg,#2a1404 0%,#0b0b0f 60%);padding:30px 24px 26px;">
+            <img src="https://m-87.netlify.app/icons/icon-192.png" width="58" height="58" alt="M87" style="display:block;border-radius:15px;margin:0 auto 12px;" />
+            <div style="font-size:27px;font-weight:800;letter-spacing:3px;color:#ffffff;line-height:1;">M87</div>
+            <div style="font-size:12.5px;color:#9a9aa6;margin-top:6px;">Controle de faltas</div>
+          </td>
+        </tr>
+
+        <!-- Corpo -->
+        <tr>
+          <td style="padding:30px 30px 6px;color:#f4f4f7;">
+            <p style="font-size:18px;font-weight:700;margin:0 0 12px;">Olá{{ if .Data.username }}, {{ .Data.username }}{{ end }}!</p>
+            <p style="font-size:14.5px;line-height:1.65;color:#c8c8d0;margin:0 0 26px;">
+              Que bom ter você no M87. Falta só um passo para ativar a sua conta: confirme o seu e-mail tocando no botão abaixo.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Botão -->
+        <tr>
+          <td align="center" style="padding:0 30px 6px;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td align="center" bgcolor="#ff7a18" style="border-radius:12px;background:linear-gradient(135deg,#ff6a00,#ff9e2c);">
+                  <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 38px;font-size:15px;font-weight:700;color:#1a0d00;text-decoration:none;border-radius:12px;">Confirmar e-mail</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Link alternativo -->
+        <tr>
+          <td style="padding:20px 30px 0;color:#6a6a76;font-size:12px;line-height:1.6;">
+            Se o botão não funcionar, copie e cole este endereço no navegador:<br />
+            <a href="{{ .ConfirmationURL }}" style="color:#ff9e2c;word-break:break-all;">{{ .ConfirmationURL }}</a>
+          </td>
+        </tr>
+
+        <!-- Rodapé -->
+        <tr>
+          <td style="padding:24px 30px;margin-top:10px;color:#6a6a76;font-size:11.5px;line-height:1.6;border-top:1px solid rgba(255,255,255,0.06);">
+            Se você não criou uma conta no M87, é só ignorar este e-mail.
+          </td>
+        </tr>
+
+      </table>
+      <div style="font-size:11px;color:#4a4a55;margin-top:16px;">M87 · Controle de faltas para estudantes da USP</div>
+    </td>
+  </tr>
+</table>

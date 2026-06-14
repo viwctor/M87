@@ -8,13 +8,14 @@ A cloud-synchronized Progressive Web Application for University of Sao Paulo (US
 students to track attendance, manage academic schedules and monitor absence limits
 across devices.
 
-[![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](https://m87.netlify.app)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/1f511dd9-3fe2-49fd-b7d6-7cd156de54f1/deploy-status)](https://app.netlify.com/projects/m-87/deploys)
+[![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](https://m-87.netlify.app)
 [![Supabase](https://img.shields.io/badge/Supabase-auth%20%26%20realtime-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
 [![Version](https://img.shields.io/badge/version-0.9%20beta-ff8a1e)](CHANGELOG.md)
 [![Last commit](https://img.shields.io/github/last-commit/viwctor/m87)](https://github.com/viwctor/m87/commits)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**Live demo:** [m87.netlify.app](https://m87.netlify.app)
+**Live demo:** [m-87.netlify.app](https://m-87.netlify.app)
 
 </div>
 
@@ -125,7 +126,7 @@ The absence limit follows the USP rule of a maximum of 25 percent of missed clas
 | Security | Row Level Security (RLS) |
 | Realtime | Supabase Realtime (postgres_changes) |
 | Hosting | Netlify (auto-deploy from GitHub) |
-| Domain | m87.netlify.app |
+| Domain | m-87.netlify.app |
 
 ## Architecture
 
@@ -183,7 +184,7 @@ Leaving both empty runs the app fully offline with no login screen.
 ## Deployment
 
 The application is a static site hosted on Netlify at
-[m87.netlify.app](https://m87.netlify.app), built directly from this GitHub repository.
+[m-87.netlify.app](https://m-87.netlify.app), built directly from this GitHub repository.
 Every push to the default branch triggers an automatic redeploy. All paths are relative,
 so the app works equally at a domain root or a sub-path.
 
