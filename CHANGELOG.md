@@ -3,6 +3,23 @@
 All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1] - 2026-06-15
+
+### Added
+- Animated background across the app: white particles with a subtle film-grain noise. On the login screen they orbit and fall toward the center (the black hole); inside the app they drift gently and sparsely.
+- "Install app" button under Settings → App, with installation instructions tailored to each browser (Chrome, Edge, Opera, Brave, Safari, Firefox and iOS) and automatic detection when the app is already installed.
+- The version notes now open automatically the first time the app is reloaded after an update.
+
+### Changed
+- New deep-black logo and a continuously rotating black-hole icon on the splash, login, header and sidebar.
+- App icons (favicon and install icon) now have rounded corners.
+- Login screen uses a pure-black background and a larger logo, so the disc appears to float in space.
+- The offline state is now a centered window with a blurred backdrop and a red crossed-out Wi-Fi icon, replacing the bottom bar.
+- Connection indicator moved to the right on mobile.
+
+### Fixed
+- Install instructions no longer always show the Safari text; each browser now gets the right guidance, and an already-installed app is detected even when opened in the browser.
+
 ## [1.0] - 2026-06-14
 
 First stable release.

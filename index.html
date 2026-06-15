@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#050507" />
   <meta name="description" content="M87" />
 
-  <!-- PWA -->
+  <!-- pwa -->
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/png" href="./icons/icon-192.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
@@ -18,18 +18,22 @@
   <title>M87</title>
 </head>
 <body>
-  <!-- ===================== SPLASH / ABERTURA ===================== -->
+  <!-- fundo: partículas + ruído (poeira caindo no buraco negro) -->
+  <canvas id="bgFx" class="bg-fx" aria-hidden="true"></canvas>
+  <div id="bgNoise" class="bg-noise" aria-hidden="true"></div>
+
+  <!-- splash/abertura -->
   <div id="splash" class="splash">
     <div class="splash-bh">
-      <span class="ring"></span><span class="ring"></span>
-      <img src="./icons/icon-192.png" alt="" />
+      <img src="./icons/logo.png" alt="" />
     </div>
   </div>
 
-  <!-- ===================== TELA DE LOGIN ===================== -->
+  <!-- tela de login -->
   <div id="auth" class="auth-screen" hidden>
+    <canvas id="authFx" class="bg-fx" aria-hidden="true"></canvas>
     <div class="auth-inner">
-      <div class="auth-logo"><img src="./icons/icon-192.png" alt="" /></div>
+      <div class="auth-logo"><img src="./icons/logo.png" alt="" /></div>
       <h1 class="auth-title">M87</h1>
       <div class="auth-form">
         <input type="text" id="authUsername" data-i18n-ph="auth.user_ph" placeholder="Nome de usuário" autocomplete="username" maxlength="24" hidden />
@@ -43,13 +47,16 @@
     </div>
   </div>
 
-  <!-- ===================== TOPO ===================== -->
+  <!-- topo -->
   <header class="app-header">
     <div class="brand">
-      <img src="./icons/icon-192.png" alt="M87" class="brand-logo" />
+      <img src="./icons/logo.png" alt="M87" class="brand-logo" />
       <h1 class="brand-title">M87</h1>
     </div>
-    <span id="connDot" class="conn-dot online" data-i18n-title="header.conn" title="Conexão"></span>
+    <div class="conn-wrap">
+      <span id="connDot" class="conn-dot online" data-i18n-title="header.conn" title="Conexão"></span>
+      <span id="connText" class="conn-text online"></span>
+    </div>
     <div class="header-actions">
       <button id="semesterBtn" class="semester-btn" data-i18n-aria="header.change_sem" aria-label="Trocar semestre">
         <span id="semesterBtnLabel"></span>
@@ -58,9 +65,9 @@
     </div>
   </header>
 
-  <!-- ===================== VIEWS ===================== -->
+  <!-- views -->
   <main class="app-main">
-    <!-- Matérias -->
+    <!-- matérias -->
     <section id="view-subjects" class="view">
       <div id="subjectsByDay"></div>
       <div class="manage-section">
@@ -72,14 +79,14 @@
       </div>
     </section>
 
-    <!-- Dashboard -->
+    <!-- dashboard -->
     <section id="view-dashboard" class="view active">
       <div class="semester-banner" id="semesterBanner"></div>
       <div id="dashboardGrid" class="dashboard-grid"></div>
       <div id="semesterSummary" class="summary-wrap"></div>
     </section>
 
-    <!-- Calendário -->
+    <!-- calendário -->
     <section id="view-calendar" class="view">
       <div class="cal-toolbar">
         <button id="calPrev" class="icon-btn" data-i18n-aria="cal.prev" aria-label="Mês anterior">
@@ -103,7 +110,7 @@
       </div>
     </section>
 
-    <!-- Configurações -->
+    <!-- configurações -->
     <section id="view-settings" class="view">
       <button class="account-card" id="accountCard" hidden>
         <span class="account-avatar" id="accountAvatar">M</span>
@@ -124,15 +131,20 @@
       </div>
 
       <div class="manage-section">
+        <h4 data-i18n="app.section">Aplicativo</h4>
+        <button class="btn btn-sm btn-ghost" id="installBtn" data-i18n="app.install">Instalar app</button>
+      </div>
+
+      <div class="manage-section">
         <h4 data-i18n="set.about">Sobre</h4>
         <button class="btn btn-sm btn-ghost" id="aboutBtn" data-i18n="set.about_btn">Sobre o aplicativo</button>
       </div>
     </section>
   </main>
 
-  <!-- ===================== NAV (inferior no mobile, lateral no desktop) ===================== -->
+  <!-- nav (inferior no mobile; lateral no desktop) -->
   <nav class="bottom-nav">
-    <div class="nav-logo"><img src="./icons/icon-192.png" alt="M87" /><span>M87</span></div>
+    <div class="nav-logo"><img src="./icons/logo.png" alt="M87" /><span>M87</span></div>
     <button class="nav-btn" data-view="subjects">
       <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M5 4h11a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2Zm2 4v2h7V8H7Zm0 4v2h7v-2H7Z"/></svg>
       <span data-i18n="nav.subjects">Matérias</span>
@@ -154,12 +166,12 @@
     </button>
   </nav>
 
-  <!-- FAB -->
+  <!-- fab -->
   <button id="fab" class="fab" aria-label="Registrar ocorrência">
     <svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
   </button>
 
-  <!-- ===================== MODAL: DIA ===================== -->
+  <!-- modal: dia -->
   <div id="dayModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
@@ -194,7 +206,7 @@
     </div>
   </div>
 
-  <!-- ===================== MODAL: EDITAR MATÉRIA ===================== -->
+  <!-- modal: editar matéria -->
   <div id="subjectModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
@@ -236,7 +248,7 @@
     </div>
   </div>
 
-  <!-- ===================== MODAL: SOBRE ===================== -->
+  <!-- modal: sobre -->
   <div id="aboutModal" class="modal-overlay" hidden>
     <div class="modal about-modal">
       <div class="modal-head">
@@ -261,7 +273,7 @@
     </div>
   </div>
 
-  <!-- ===================== MODAL: SELECIONAR SEMESTRE ===================== -->
+  <!-- modal: selecionar semestre -->
   <div id="semesterModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
@@ -274,7 +286,7 @@
     </div>
   </div>
 
-  <!-- ===================== MODAL: NOVO/EDITAR SEMESTRE ===================== -->
+  <!-- modal: novo/editar semestre -->
   <div id="semEditModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
@@ -303,7 +315,7 @@
     </div>
   </div>
 
-  <!-- ===================== MODAL: CONFIRMAÇÃO ===================== -->
+  <!-- modal: confirmação -->
   <div id="confirmModal" class="modal-overlay" hidden>
     <div class="modal modal-confirm">
       <h3 id="confirmTitle" data-i18n="confirm.title">Confirmar</h3>
@@ -316,7 +328,7 @@
     </div>
   </div>
 
-  <!-- ===================== MODAL: CONTA ===================== -->
+  <!-- modal: conta -->
   <div id="accountModal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-head">
@@ -344,9 +356,19 @@
     </div>
   </div>
 
-  <div id="offlineBar" class="offline-bar" hidden>
-    <span data-i18n="misc.offline_bar">Sem conexão com a rede — alterações desativadas.</span>
-    <button class="btn btn-sm btn-ghost" id="retryConn" data-i18n="misc.retry">Tentar novamente</button>
+  <div id="offlineBar" class="offline-overlay" hidden>
+    <div class="offline-card">
+      <svg class="wifi-off" viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 2l20 20" />
+        <path d="M5 12.55a11 11 0 0 1 5.17-2.39" />
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9" />
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" />
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <line x1="12" y1="20" x2="12.01" y2="20" />
+      </svg>
+      <p data-i18n="misc.offline_bar">Você está sem conexão. As alterações ficam desativadas até reconectar.</p>
+      <button class="btn btn-sm btn-primary" id="retryConn" data-i18n="misc.retry">Tentar novamente</button>
+    </div>
   </div>
 
   <div id="toast" class="toast" hidden></div>

@@ -1,11 +1,5 @@
-/* ============================================================
-   M87 — Internacionalização (Português / Inglês / Espanhol)
-   Detecta o idioma do sistema na 1ª vez (pt-PT cai em pt-BR;
-   qualquer idioma fora de pt/es cai em inglês).
-   ============================================================ */
 const I18N = {
   pt: {
-    /* Auth */
     "auth.email_ph": "E-mail institucional USP",
     "auth.user_ph": "Nome de usuário",
     "auth.pass_ph": "Senha",
@@ -34,7 +28,6 @@ const I18N = {
     "auth.save": "Salvar",
     "auth.new_pass_ph": "Nova senha",
 
-    /* Nav */
     "nav.subjects": "Matérias",
     "nav.dashboard": "Faltas",
     "nav.calendar": "Calendário",
@@ -42,21 +35,19 @@ const I18N = {
     "nav.collapse": "Recolher menu",
     "nav.expand": "Expandir menu",
 
-    /* Header */
     "header.no_semester": "Sem semestre",
     "header.conn": "Conexão",
     "header.change_sem": "Trocar semestre",
 
-    /* Subjects */
     "subjects.list": "Lista de matérias",
     "subjects.new": "+ Nova matéria",
     "subjects.none_scheduled": "Nenhuma matéria com horário cadastrado neste semestre. Adicione abaixo.",
     "subjects.none_yet": "Nenhuma matéria ainda.",
     "subjects.no_name": "(sem nome)",
     "subjects.no_schedule": "sem horário definido",
+    "subjects.copy_email": "Copiar e-mail",
     "subjects.meta": "{credits} créditos · {meetings}",
 
-    /* Dashboard */
     "dash.no_semester": "Nenhum semestre ainda.<br/>Toque no seletor de semestre (no topo) para criar um.",
     "dash.subjects_one": "{n} matéria",
     "dash.subjects_other": "{n} matérias",
@@ -68,18 +59,15 @@ const I18N = {
     "dash.alert_reached": "Limite de faltas atingido",
     "dash.alert_over": "Limite ultrapassado em {n}",
 
-    /* Summary */
     "sum.title": "Resumo do semestre",
     "sum.credits_faltas": "{c} créditos · {u}/{m} faltas",
     "sum.remaining": "Aulas restantes por matéria",
     "sum.classes_one": "{n} aula",
     "sum.classes_other": "{n} aulas",
 
-    /* Notify */
     "notify.one_left_title": "Só pode faltar mais 1 dia",
     "notify.none_left_title": "Não pode faltar mais",
 
-    /* Calendar */
     "cal.today": "Hoje",
     "cal.prev": "Mês anterior",
     "cal.next": "Próximo mês",
@@ -89,7 +77,6 @@ const I18N = {
     "cal.legend_noclass": "Sem aula",
     "cal.changed_to": "Mudou para {label}",
 
-    /* Day modal */
     "day.title_default": "Registrar ocorrência",
     "day.date": "Data",
     "day.note": "Observação (opcional)",
@@ -106,7 +93,6 @@ const I18N = {
     "day.saved": "Salvo ✓",
     "day.cleared": "Dia limpo ✓",
 
-    /* Shifts / slots */
     "shift.morning": "Manhã",
     "shift.afternoon": "Tarde",
     "shift.evening": "Noite",
@@ -115,7 +101,6 @@ const I18N = {
     "slot.full": "Integral",
     "slot.custom": "Personalizado",
 
-    /* Subject modal */
     "subj.title": "Matéria",
     "subj.edit": "Editar matéria",
     "subj.new": "Nova matéria",
@@ -140,7 +125,6 @@ const I18N = {
     "subj.delete_confirm": "Excluir esta matéria? As faltas dela serão desconsideradas.",
     "subj.remove_meeting": "Remover",
 
-    /* Semester */
     "sem.title": "Semestre",
     "sem.new": "Novo semestre",
     "sem.edit": "Editar semestre",
@@ -153,8 +137,6 @@ const I18N = {
     "sem.period_aug_short": "Ago - Dez",
     "sem.year": "Ano",
     "sem.nth": "{n}º Semestre",
-    "sem.cancel": "Cancelar",
-    "sem.save": "Salvar",
     "sem.delete": "Excluir",
     "sem.limit": "Limite de 18 semestres.",
     "sem.updated": "Semestre atualizado ✓",
@@ -164,14 +146,12 @@ const I18N = {
     "sem.new_semester": "+ Novo semestre",
     "sem.edit_aria": "Editar semestre",
 
-    /* Settings */
     "set.about": "Sobre",
     "set.about_btn": "Sobre o aplicativo",
     "set.language": "Idioma",
     "set.account": "Conta",
     "set.account_sub": "Toque para gerenciar a conta",
 
-    /* Account modal */
     "acc.title": "Conta",
     "acc.logout": "Sair da conta",
     "acc.wipe": "Apagar todos os dados",
@@ -186,27 +166,48 @@ const I18N = {
     "acc.deleted": "Conta excluída. Para usar este e-mail de novo, crie uma nova conta.",
     "acc.delete_partial": "Dados apagados, mas não foi possível remover o login (rode a função delete_user no Supabase).",
 
-    /* Confirm */
     "confirm.title": "Confirmar",
     "confirm.cancel": "Cancelar",
     "confirm.yes": "Confirmar",
 
-    /* About */
     "about.title": "Sobre",
     "about.project": "Projeto M87",
     "about.made_with": "Desenvolvido com",
     "about.made_by": "por",
     "about.changelog":
-      "Versão 1.0:\n   E-mails de confirmação e recuperação personalizados\n   Mensagens de erro mais claras no login\n   Mais estabilidade e ajustes finos\n\nNovidades 0.9:\n   Sincronização em tempo real entre aparelhos\n   Indicador de conexão (online/instável/offline)\n   Idiomas: português, inglês e espanhol\n   Layout desktop em duas colunas com menu recolhível\n   Cards por dia agrupando as matérias\n   Confirmações com contagem regressiva\n\nNovidades 0.8:\n   Login com e-mail USP e dados na nuvem\n   Guia Matérias (info por dia, sala, professor)\n   Criação guiada de semestres (até 18)\n   Horários: manhã, tarde, noite, integral e personalizado\n   Resumo com total de créditos\n",
+      "Versão 1.1:\n * Novos efeitos visuais, logo e ícones renovados;\n * Botão “Instalar app” com instruções para cada navegador;\n * Janela de sem conexão remodelada e notas exibidas após atualizar;\n\nVersão 1.0:\n * E-mails de confirmação e recuperação personalizados;\n * Mensagens de erro corrigidas no login;\n * Otimização e correção de bugs;\n\nNovidades 0.9:\n * Sincronização em tempo real entre aparelhos;\n * Idiomas: português, inglês e espanhol;\n * Indicador de conexão (online/instável/offline);\n",
 
-    /* Misc */
     "misc.copied_email": "E-mail copiado ✓",
     "misc.offline": "Sem conexão com a rede.",
-    "misc.offline_bar": "Sem conexão com a rede — alterações desativadas.",
+    "misc.offline_bar": "Você está sem conexão. As alterações ficam desativadas até reconectar.",
     "misc.retry": "Tentar novamente",
     "misc.updated_other": "Atualizado de outro aparelho ⟳",
     "misc.lang_changed": "Idioma alterado ✓",
     "misc.close": "Fechar",
+
+    "kbd.title": "atalhos",
+    "kbd.tabs": "guias",
+    "kbd.month": "mês",
+    "kbd.today": "hoje",
+    "kbd.new": "registrar",
+    "kbd.esc": "fechar",
+
+    "update.available": "Nova atualização disponível",
+    "update.reload": "Recarregar",
+    "update.dismiss": "Dispensar",
+
+    "conn.online": "Conectado",
+    "conn.saving": "Salvando…",
+    "conn.offline": "Sem conexão",
+
+    "app.section": "Aplicativo",
+    "app.install": "Instalar app",
+    "app.installed": "App já instalado",
+    "app.hint_ios": "No iPhone/iPad, toque em Compartilhar e em “Adicionar à Tela de Início”.",
+    "app.hint_safari": "No Safari, abra Compartilhar e toque em “Adicionar ao Dock”.",
+    "app.hint_chromium": "Clique no ícone de instalar na barra de endereço, ou no menu ⋮ escolha “Instalar M87”.",
+    "app.hint_menu": "Abra o menu do navegador ⋮ e toque em “Instalar app”.",
+    "app.hint_firefox": "O Firefox no computador não instala apps. Abra o M87 no Chrome, Edge ou Opera.",
   },
 
   en: {
@@ -255,6 +256,7 @@ const I18N = {
     "subjects.none_yet": "No subjects yet.",
     "subjects.no_name": "(no name)",
     "subjects.no_schedule": "no schedule set",
+    "subjects.copy_email": "Copy e-mail",
     "subjects.meta": "{credits} credits · {meetings}",
 
     "dash.no_semester": "No semester yet.<br/>Tap the semester selector (at the top) to create one.",
@@ -346,8 +348,6 @@ const I18N = {
     "sem.period_aug_short": "Aug - Dec",
     "sem.year": "Year",
     "sem.nth": "Semester {n}",
-    "sem.cancel": "Cancel",
-    "sem.save": "Save",
     "sem.delete": "Delete",
     "sem.limit": "Limit of 18 semesters.",
     "sem.updated": "Semester updated ✓",
@@ -386,15 +386,39 @@ const I18N = {
     "about.made_with": "Built with",
     "about.made_by": "by",
     "about.changelog":
-      "Version 1.0:\n   Personalized confirmation and recovery e-mails\n   Clearer login error messages\n   More stability and polish\n\nWhat's new in 0.9:\n   Real-time sync across devices\n   Connection indicator (online/unstable/offline)\n   Languages: Portuguese, English and Spanish\n   Two-column desktop layout with collapsible menu\n   Per-day cards grouping subjects\n   Confirmations with countdown\n\nWhat's new in 0.8:\n   Login with USP e-mail and cloud data\n   Subjects tab (info per day, room, professor)\n   Guided semester creation (up to 18)\n   Time slots: morning, afternoon, evening, full-time and custom\n   Summary with total credits\n",
+      "Version 1.1:\n * New visual effects, refreshed logo and icons;\n * “Install app” button with per-browser instructions;\n * Redesigned offline window and release notes shown after updating;\n\nVersion 1.0:\n * Personalized confirmation and recovery e-mails;\n * Fixed login error messages;\n * Optimization and bug fixes;\n\nWhat's new in 0.9:\n * Real-time sync across devices;\n * Languages: Portuguese, English and Spanish;\n * Connection indicator (online/unstable/offline);\n",
 
     "misc.copied_email": "E-mail copied ✓",
     "misc.offline": "No network connection.",
-    "misc.offline_bar": "No network connection — editing disabled.",
+    "misc.offline_bar": "You're offline. Editing is disabled until you reconnect.",
     "misc.retry": "Try again",
     "misc.updated_other": "Updated from another device ⟳",
     "misc.lang_changed": "Language changed ✓",
     "misc.close": "Close",
+
+    "kbd.title": "shortcuts",
+    "kbd.tabs": "tabs",
+    "kbd.month": "month",
+    "kbd.today": "today",
+    "kbd.new": "log entry",
+    "kbd.esc": "close",
+
+    "update.available": "New update available",
+    "update.reload": "Reload",
+    "update.dismiss": "Dismiss",
+
+    "conn.online": "Connected",
+    "conn.saving": "Saving…",
+    "conn.offline": "Offline",
+
+    "app.section": "App",
+    "app.install": "Install app",
+    "app.installed": "App already installed",
+    "app.hint_ios": "On iPhone/iPad, tap Share then “Add to Home Screen”.",
+    "app.hint_safari": "In Safari, open Share then tap “Add to Dock”.",
+    "app.hint_chromium": "Click the install icon in the address bar, or choose “Install M87” from the menu ⋮.",
+    "app.hint_menu": "Open the browser menu ⋮ and tap “Install app”.",
+    "app.hint_firefox": "Firefox on desktop can't install apps. Open M87 in Chrome, Edge or Opera.",
   },
 
   es: {
@@ -443,6 +467,7 @@ const I18N = {
     "subjects.none_yet": "Aún no hay materias.",
     "subjects.no_name": "(sin nombre)",
     "subjects.no_schedule": "sin horario definido",
+    "subjects.copy_email": "Copiar correo",
     "subjects.meta": "{credits} créditos · {meetings}",
 
     "dash.no_semester": "Aún no hay semestre.<br/>Toca el selector de semestre (arriba) para crear uno.",
@@ -534,8 +559,6 @@ const I18N = {
     "sem.period_aug_short": "Ago - Dic",
     "sem.year": "Año",
     "sem.nth": "{n}º Semestre",
-    "sem.cancel": "Cancelar",
-    "sem.save": "Guardar",
     "sem.delete": "Eliminar",
     "sem.limit": "Límite de 18 semestres.",
     "sem.updated": "Semestre actualizado ✓",
@@ -574,15 +597,39 @@ const I18N = {
     "about.made_with": "Desarrollado con",
     "about.made_by": "por",
     "about.changelog":
-      "Versión 1.0:\n   Correos de confirmación y recuperación personalizados\n   Mensajes de error más claros en el inicio de sesión\n   Más estabilidad y ajustes finos\n\nNovedades 0.9:\n   Sincronización en tiempo real entre dispositivos\n   Indicador de conexión (en línea/inestable/sin conexión)\n   Idiomas: portugués, inglés y español\n   Diseño de escritorio en dos columnas con menú plegable\n   Tarjetas por día agrupando las materias\n   Confirmaciones con cuenta regresiva\n\nNovedades 0.8:\n   Inicio de sesión con correo USP y datos en la nube\n   Pestaña Materias (info por día, sala, profesor)\n   Creación guiada de semestres (hasta 18)\n   Horarios: mañana, tarde, noche, completo y personalizado\n   Resumen con total de créditos\n",
+      "Versión 1.1:\n * Nuevos efectos visuales, logo e iconos renovados;\n * Botón “Instalar app” con instrucciones para cada navegador;\n * Ventana de sin conexión rediseñada y notas mostradas tras actualizar;\n\nVersión 1.0:\n * Correos de confirmación y recuperación personalizados;\n * Mensajes de error corregidos en el inicio de sesión;\n * Optimización y corrección de errores;\n\nNovedades 0.9:\n * Sincronización en tiempo real entre dispositivos;\n * Idiomas: portugués, inglés y español;\n * Indicador de conexión (en línea/inestable/sin conexión);\n",
 
     "misc.copied_email": "Correo copiado ✓",
     "misc.offline": "Sin conexión de red.",
-    "misc.offline_bar": "Sin conexión de red — edición desactivada.",
+    "misc.offline_bar": "Estás sin conexión. La edición se desactiva hasta que vuelvas a conectarte.",
     "misc.retry": "Reintentar",
     "misc.updated_other": "Actualizado desde otro dispositivo ⟳",
     "misc.lang_changed": "Idioma cambiado ✓",
     "misc.close": "Cerrar",
+
+    "kbd.title": "atajos",
+    "kbd.tabs": "pestañas",
+    "kbd.month": "mes",
+    "kbd.today": "hoy",
+    "kbd.new": "registrar",
+    "kbd.esc": "cerrar",
+
+    "update.available": "Nueva actualización disponible",
+    "update.reload": "Recargar",
+    "update.dismiss": "Descartar",
+
+    "conn.online": "Conectado",
+    "conn.saving": "Guardando…",
+    "conn.offline": "Sin conexión",
+
+    "app.section": "Aplicación",
+    "app.install": "Instalar app",
+    "app.installed": "App ya instalada",
+    "app.hint_ios": "En iPhone/iPad, toca Compartir y “Añadir a pantalla de inicio”.",
+    "app.hint_safari": "En Safari, abre Compartir y toca “Añadir al Dock”.",
+    "app.hint_chromium": "Haz clic en el icono de instalar en la barra de direcciones, o elige “Instalar M87” en el menú ⋮.",
+    "app.hint_menu": "Abre el menú del navegador ⋮ y toca “Instalar app”.",
+    "app.hint_firefox": "Firefox en el ordenador no instala apps. Abre M87 en Chrome, Edge u Opera.",
   },
 };
 
@@ -591,10 +638,10 @@ function detectLang() {
   if (saved && I18N[saved]) return saved;
   const nav = (navigator.languages && navigator.languages[0]) || navigator.language || "en";
   const low = nav.toLowerCase();
-  if (low.startsWith("pt")) return "pt";   // inclui pt-PT -> português brasileiro
+  if (low.startsWith("pt")) return "pt";   // inclui pt-PT
   if (low.startsWith("es")) return "es";
   if (low.startsWith("en")) return "en";
-  return "en";                              // qualquer outro idioma -> inglês
+  return "en";                              // qualquer outro idioma = inglês
 }
 
 let LANG = detectLang();

@@ -1,4 +1,5 @@
-param([int]$Port = 8099, [string]$Root = "c:\Users\Usuario\Desktop\M87")
+param([int]$Port = 8700, [string]$Root = $PSScriptRoot)
+if (-not $Root) { $Root = (Get-Location).Path }   # serve a partir da pasta do próprio script
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$Port/")
 $listener.Start()

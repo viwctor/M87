@@ -1,5 +1,5 @@
-/* M87 — Service Worker (offline-first app shell) */
-const CACHE = "m87-v1.0";
+/* service worker (offline-first app shell) */
+const CACHE = "m87-v1.1";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const ASSETS = [
   "./app.js",
   "./supabase.js",
   "./manifest.webmanifest",
+  "./icons/logo.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
 ];
@@ -32,7 +33,7 @@ self.addEventListener("fetch", (e) => {
   const { request } = e;
   if (request.method !== "GET") return;
 
-  // Só gerencia arquivos do próprio site; recursos externos vão direto pela rede.
+  // só gerencia arquivos do próprio site; recursos externos vão direto pela rede.
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
@@ -40,8 +41,10 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     fetch(request)
       .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+        if (res.ok) {   // só guarda respostas válidas (não cacheia 404/erros)
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+        }
         return res;
       })
       .catch(() => caches.match(request).then((c) =>

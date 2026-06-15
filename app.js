@@ -1,28 +1,23 @@
-/* ============================================================
-   M87 — Controle de Faltas
-   Vanilla JS · localStorage · PWA
-   ------------------------------------------------------------
-   Modelo de dados (chave localStorage: "m87.data")
+/* modelo de dados (chave localStorage: "m87.data")
    {
      version, activeSemester,
      semesters: {
        "2026.1": {
          label, start:"YYYY-MM-DD", end:"YYYY-MM-DD",
-         subjects: [{ id, code, name, prof, credits, color,
-                      meetings:[{ weekday:1-6, slot:"m1|m2|n1|n2" }] }]
+         subjects: [{ id, name, prof, profEmail, credits, color,
+                      meetings:[{ weekday:1-6, slot, room }] }]
        }
      },
      occ:   { "2026.1": { "YYYY-MM-DD": { "n1":"falta"|"prof", ... } } },
      marks: { "2026.1": { "YYYY-MM-DD": "holiday"|"noclass" } },
      notes: { "2026.1": { "YYYY-MM-DD": "texto da observação" } }
    }
-   Slots (horários): manhã m1/m2, noite n1/n2.
-   Cada slot com status "falta" = 1 falta. "prof" não conta.
-   Limite: 4 créditos = 8 faltas · 2 créditos = 4 faltas.
-   ============================================================ */
+  slots (horários): manhã (m1/m2/mi), tarde (t1/t2/ti), noite (n1/n2) e personalizado (c:HH:MM-HH:MM).
+  cada slot com status; prof. faltou não conta;
+  limite: 4 créditos = 8 faltas; 2 créditos = 4 faltas; */
 
 const STORE_KEY = "m87.data";
-const APP_VERSION = "1.0";
+const APP_VERSION = "1.1";
 
 /* id único deste aparelho (para ignorar o eco das próprias escritas no tempo real) */
 const DEVICE_ID = (() => {
@@ -31,19 +26,19 @@ const DEVICE_ID = (() => {
   return id;
 })();
 
-/* Paleta de cores (gradientes) das matérias */
+/* paleta de cores (gradientes) das matérias */
 const PALETTE = [
-  "linear-gradient(135deg, #ff8a1e, #ffd23f)",
-  "linear-gradient(135deg, #ff4e50, #ff8a1e)",
-  "linear-gradient(135deg, #ffd23f, #ff7a18)",
-  "linear-gradient(135deg, #ff5e7e, #ff4e50)",
-  "linear-gradient(135deg, #25d0a4, #1fb6ff)",
-  "linear-gradient(135deg, #5ee7a0, #25d0a4)",
-  "linear-gradient(135deg, #b06bff, #ff5e7e)",
-  "linear-gradient(135deg, #ffb347, #e8552d)",
+  "linear-gradient(135deg, #ff8a1e, #ff6a00)",  // laranja
+  "linear-gradient(135deg, #ffd23f, #ffae00)",  // amarelo
+  "linear-gradient(135deg, #2dce89, #7be36b)",  // verde
+  "linear-gradient(135deg, #12d8c5, #1fb6ff)",  // ciano
+  "linear-gradient(135deg, #3b5bdb, #5c8cff)",  // azul
+  "linear-gradient(135deg, #9d6bff, #6a3df0)",  // roxo
+  "linear-gradient(135deg, #ff5edf, #c850ff)",  // rosa
+  "linear-gradient(135deg, #ff4d4d, #ff2d6f)",  // vermelho
 ];
 
-/* Horários possíveis, em ordem cronológica */
+/* horários possíveis, em ordem cronológica */
 const SLOT_DEFS = [
   { id: "m1", time: "08:00 – 09:40", short: "08h",   start: "08:00", label: "1ª aula", shift: "Manhã" },
   { id: "m2", time: "10:00 – 11:40", short: "10h",   start: "10:00", label: "2ª aula", shift: "Manhã" },
@@ -55,7 +50,6 @@ const SLOT_DEFS = [
   { id: "n2", time: "20:50 – 22:30", short: "20h50", start: "20:50", label: "2ª aula", shift: "Noite" },
 ];
 const SLOT_BY_ID = Object.fromEntries(SLOT_DEFS.map(s => [s.id, s]));
-const SLOT_ORDER = SLOT_DEFS.map(s => s.id);
 
 /* resolve um slot, seja preset ou personalizado ("c:HH:MM-HH:MM") */
 function slotInfo(id) {
@@ -78,7 +72,7 @@ function emptyData() {
 /* compatibilidade: o app sempre inicia vazio (a grade real vem da nuvem após o login) */
 function seedData() { return emptyData(); }
 
-/* ---------- Estado ---------- */
+/* estado */
 let data = loadData();
 let calRef = null;
 let lastSwipe = 0;
@@ -97,7 +91,7 @@ function loadData() {
   }
 }
 
-/* Migra dados antigos (slots numéricos 1/2 = noite) para o novo formato */
+/* migra dados antigos (slots numéricos 1/2 = noite) para o novo formato */
 function migrate(d) {
   d.occ = d.occ || {};
   d.marks = d.marks || {};
@@ -119,7 +113,7 @@ function migrate(d) {
       }
     }
   }
-  // garante que o semestre ativo realmente existe (protege contra backups corrompidos)
+  // garante que o semestre ativo realmente existe (protege contra dados corrompidos)
   if (d.semesters && !d.semesters[d.activeSemester]) {
     d.activeSemester = Object.keys(d.semesters)[0];
   }
@@ -137,7 +131,7 @@ function saveData() {
   if (cloudUserId) { clearTimeout(cloudSaveTimer); cloudSaveTimer = setTimeout(pushCloud, 700); }
 }
 
-/* ---------- Helpers ---------- */
+/* helpers */
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
@@ -177,20 +171,22 @@ function subjectAt(weekday, slotId) {
   return tt[weekday] ? tt[weekday][slotId] : null;
 }
 
-function countAbsences(subjectId) {
+/* conta as faltas de TODAS as matérias do semestre ativo numa só passada
+   (mapa id -> nº de faltas), evitando recalcular por matéria a cada chamada */
+function absenceCounts() {
   const occ = semOcc(), marks = semMarks();
-  let count = 0;
+  const counts = {};
   for (const [date, slots] of Object.entries(occ)) {
     if (marks[date]) continue;
     const wd = isoWeekday(parseDate(date));
     for (const slotId of Object.keys(slots)) {
       if (slots[slotId] === "falta") {
         const subj = subjectAt(wd, slotId);
-        if (subj && subj.id === subjectId) count++;
+        if (subj) counts[subj.id] = (counts[subj.id] || 0) + 1;
       }
     }
   }
-  return count;
+  return counts;
 }
 
 function meetingsText(s) {
@@ -201,15 +197,14 @@ function meetingsText(s) {
 /* limita o tamanho de um texto para preservar o armazenamento por usuário */
 function clampText(str, n) { return String(str == null ? "" : str).slice(0, n); }
 
-function toast(msg) {
+function toast(msg, ms = 2200) {
   const el = $("#toast");
   el.textContent = msg; el.hidden = false;
   clearTimeout(el._tid);
-  el._tid = setTimeout(() => (el.hidden = true), 2200);
+  el._tid = setTimeout(() => (el.hidden = true), ms);
 }
-function esc(str = "") {
-  return str.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-}
+const ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
+function esc(str = "") { return String(str).replace(/[&<>"]/g, c => ESC_MAP[c]); }
 
 function copyText(txt) {
   if (!txt) return;
@@ -237,8 +232,9 @@ function notify(title, body) {
 function maybeNotifyLimit() {
   const sem = activeSem();
   if (!sem) return;
+  const counts = absenceCounts();
   for (const s of sem.subjects) {
-    const remaining = maxFor(s) - countAbsences(s.id);
+    const remaining = maxFor(s) - (counts[s.id] || 0);
     const key = data.activeSemester + ":" + s.id;
     if (remaining === 1) {
       if (!_notified.has(key + ":1")) { _notified.add(key + ":1"); _notified.delete(key + ":0"); notify(t("notify.one_left_title"), s.name); }
@@ -250,12 +246,140 @@ function maybeNotifyLimit() {
   }
 }
 
-/* ---------- Conexão (bolinha de status) ---------- */
+/* conexão (dot + texto no desktop) */
+let _connState = "online";
 function setConn(state) {            // "online" | "saving" | "offline"
+  _connState = state;
   const dot = $("#connDot");
   if (dot) dot.className = "conn-dot " + state;
+  const txt = $("#connText");
+  if (txt) { txt.className = "conn-text " + state; txt.textContent = t("conn." + state); }
   const bar = $("#offlineBar");
   if (bar) bar.hidden = state !== "offline";
+}
+
+/* instalar app (PWA) — detecta se já está instalado / aberto como app */
+let _deferredInstall = null;
+let _relatedInstalled = false;
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+function isInstalled() {
+  return isStandalone() || _relatedInstalled;
+}
+/* mesmo aberto no navegador, detecta se o PWA já está instalado (Chromium) */
+async function checkInstalled() {
+  if (isStandalone() || !navigator.getInstalledRelatedApps) return;
+  try {
+    const apps = await navigator.getInstalledRelatedApps();
+    if (Array.isArray(apps) && apps.length) { _relatedInstalled = true; renderInstallButton(); }
+  } catch (e) {}
+}
+/* escolhe a instrução de instalação certa para cada navegador/sistema */
+function installHintKey() {
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (isIOS) return "app.hint_ios";                      // iOS: todos os navegadores usam o WebKit
+  const isAndroid = /android/.test(ua);
+  if (/firefox|fxios/.test(ua)) return isAndroid ? "app.hint_menu" : "app.hint_firefox";
+  if (/safari/.test(ua) && !/chrome|chromium|crios|edg|edgios|opr|opera|brave/.test(ua)) return "app.hint_safari";
+  return isAndroid ? "app.hint_menu" : "app.hint_chromium";   // Chrome/Edge/Opera/Brave/etc.
+}
+function renderInstallButton() {
+  const btn = $("#installBtn");
+  if (!btn) return;
+  if (isInstalled()) {
+    btn.disabled = true;
+    btn.textContent = t("app.installed");
+    btn.onclick = null;
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = t("app.install");
+  btn.onclick = async () => {
+    if (_deferredInstall) {                     // Chrome/Edge/Android: instala na hora
+      _deferredInstall.prompt();
+      try { await _deferredInstall.userChoice; } catch (e) {}
+      _deferredInstall = null;
+      renderInstallButton();
+    } else {
+      toast(t(installHintKey()), 6500);         // sem prompt programático -> instrução por navegador (tempo p/ ler)
+    }
+  };
+}
+
+/* fundo animado: poeira branca. modo "orbit" (login: cai no centro) ou "drift" (app: linear) */
+function startParticles(canvas, opts = {}) {
+  if (!canvas || !canvas.getContext) return;
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const drift = opts.mode === "drift";
+  const areaPer = opts.areaPer || 16000;   // maior = menos partículas
+  const maxN = opts.max || 90;
+  const ctx = canvas.getContext("2d");
+  let w = 0, h = 0, cx = 0, cy = 0, parts = [], raf = 0;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const targetCount = () => Math.max(6, Math.min(maxN, Math.round((window.innerWidth * window.innerHeight) / areaPer)));
+  /* spread=true -> distribuída (preenche já); false -> entra pela borda/topo (renascimento) */
+  function makeDrift(spread) {
+    return {
+      x: rnd(0, w), y: spread ? rnd(0, h) : rnd(-12, -2),
+      vx: rnd(-0.06, 0.06), vy: rnd(0.05, 0.18),
+      size: rnd(0.5, 1.6), al: rnd(0.1, 0.5),
+      tw: rnd(0.004, 0.016), tp: rnd(0, Math.PI * 2),
+    };
+  }
+  function makeOrbit(spread) {
+    const far = Math.max(w, h);
+    return {
+      a: rnd(0, Math.PI * 2),
+      r: spread ? rnd(30, far * 0.78) : far * rnd(0.55, 0.8),
+      sp: rnd(0.0008, 0.0026) * (Math.random() < 0.5 ? 1 : -1),
+      vr: rnd(0.05, 0.20),
+      size: rnd(0.5, 1.7), al: rnd(0.12, 0.7),
+      tw: rnd(0.004, 0.018), tp: rnd(0, Math.PI * 2),
+    };
+  }
+  const make = (spread) => (drift ? makeDrift(spread) : makeOrbit(spread));
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    if (!w || !h) return;
+    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx = w / 2; cy = h * 0.42;
+    const n = targetCount();
+    while (parts.length < n) parts.push(make(true));   // preenche distribuído -> aparece na hora
+    parts.length = n;
+  }
+  function step() {
+    raf = requestAnimationFrame(step);
+    if (!canvas.getClientRects().length) return;   // oculto (display:none): não desenha
+    if (!w || !h) { resize(); if (!w || !h) return; }
+    ctx.clearRect(0, 0, w, h);
+    for (const p of parts) {
+      p.tp += p.tw;
+      let x, y;
+      if (drift) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.y > h + 6 || p.x < -6 || p.x > w + 6) Object.assign(p, make(false));
+        x = p.x; y = p.y;
+      } else {
+        p.a += p.sp; p.r -= p.vr;
+        if (p.r < 22) Object.assign(p, make(false));   // sugado -> renasce na borda
+        x = cx + Math.cos(p.a) * p.r;
+        y = cy + Math.sin(p.a) * p.r * 0.92;
+      }
+      ctx.globalAlpha = Math.max(0, p.al * (0.6 + 0.4 * Math.sin(p.tp)));
+      ctx.beginPath();
+      ctx.arc(x, y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = "#fff";
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  window.addEventListener("resize", resize);
+  resize();
+  raf = requestAnimationFrame(step);
 }
 function updateConn() {
   setConn(navigator.onLine ? "online" : "offline");
@@ -266,7 +390,7 @@ function blockedOffline() {
   if (cloudUserId && !navigator.onLine) { setConn("offline"); toast(t("misc.offline")); return true; }
   return false;
 }
-/* envia ao Supabase com retry limitado; mantém a bolinha amarela enquanto tenta */
+/* envia ao supabase com retry limitado; mantém a dot amarela enquanto tenta */
 let _pushTries = 0;
 function pushCloud() {
   if (!cloudUserId) return;
@@ -284,9 +408,7 @@ function pushCloud() {
     });
 }
 
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
+/* dashboard */
 function renderDashboard() {
   const sem = activeSem();
   if (!sem) {
@@ -306,11 +428,12 @@ function renderDashboard() {
     return;
   }
 
+  const counts = absenceCounts();
   const sorted = [...sem.subjects].sort((a, b) =>
-    (countAbsences(b.id) / maxFor(b)) - (countAbsences(a.id) / maxFor(a)));
+    ((counts[b.id] || 0) / maxFor(b)) - ((counts[a.id] || 0) / maxFor(a)));
 
   for (const s of sorted) {
-    const used = countAbsences(s.id);
+    const used = counts[s.id] || 0;
     const max = maxFor(s);
     const ratio = max ? used / max : 0;
     const remaining = max - used;
@@ -348,7 +471,7 @@ function renderDashboard() {
       ${alertHtml}`;
     grid.appendChild(card);
   }
-  renderSummary();
+  renderSummary(counts);
 }
 
 /* nº de aulas (sessões) que ainda vão acontecer da matéria, de hoje até o fim do semestre */
@@ -368,14 +491,14 @@ function remainingSessions(subject) {
   return count;
 }
 
-function renderSummary() {
+function renderSummary(counts = absenceCounts()) {
   const sem = activeSem();
   const wrap = $("#semesterSummary");
   if (!sem.subjects.length) { wrap.innerHTML = ""; return; }
 
   let usedTotal = 0, maxTotal = 0, creditsTotal = 0;
   const rows = sem.subjects.map(s => {
-    const used = countAbsences(s.id), max = maxFor(s);
+    const used = counts[s.id] || 0, max = maxFor(s);
     usedTotal += used; maxTotal += max; creditsTotal += (Number(s.credits) || 0);
     return { s, rest: remainingSessions(s) };
   });
@@ -398,9 +521,7 @@ function renderSummary() {
     </div>`;
 }
 
-/* ============================================================
-   CALENDÁRIO
-   ============================================================ */
+/* calendário */
 function initCalRef() {
   const sem = activeSem();
   const today = new Date();
@@ -434,12 +555,16 @@ function renderCalendar() {
     grid.appendChild(c);
   }
 
+  // slots por dia da semana, calculados uma vez (e não a cada célula)
+  const wdSlots = {};
+  for (let w = 1; w <= 7; w++) wdSlots[w] = slotsForWeekday(w);
+
   for (let d = 1; d <= daysInMonth; d++) {
     const dateObj = new Date(year, month, d);
     const dateStr = fmtDate(year, month, d);
     const wd = isoWeekday(dateObj);
     const inSem = dateObj >= semStart && dateObj <= semEnd;
-    const slots = slotsForWeekday(wd);
+    const slots = wdSlots[wd];
     const hasClass = slots.length > 0 && inSem;
 
     const cell = document.createElement("div");
@@ -474,10 +599,7 @@ function renderCalendar() {
 
     if (inSem) {
       cell.classList.add("classday");
-      cell.addEventListener("click", () => {
-        if (Date.now() - lastSwipe < 400) return; // ignora toque logo após deslizar
-        openDayModal(dateStr);
-      });
+      cell.dataset.date = dateStr;   // clique tratado por delegação em #calGrid
     }
     grid.appendChild(cell);
   }
@@ -502,6 +624,7 @@ function semesterForMonth(year, month) {
 }
 
 function calShift(delta) {
+  if (!calRef) return;   // sem semestre ativo: não há mês para navegar
   let m = calRef.month + delta, y = calRef.year;
   if (m < 0) { m = 11; y--; }
   if (m > 11) { m = 0; y++; }
@@ -523,15 +646,13 @@ function goToday() {
   data.activeSemester = currentSemesterKey();
   autoSwitched = false;
   updateSemesterButton();
-  const t = new Date();
-  calRef = { year: t.getFullYear(), month: t.getMonth() };
+  const now = new Date();
+  calRef = { year: now.getFullYear(), month: now.getMonth() };
   renderDashboard();
   renderCalendar();
 }
 
-/* ============================================================
-   MODAL DE DIA
-   ============================================================ */
+/* modal de dia */
 let dayModalState = null;
 
 function openDayModal(dateStr) {
@@ -652,9 +773,7 @@ function clearDay() {
   toast(t("day.cleared"));
 }
 
-/* ============================================================
-   GUIA MATÉRIAS + CONFIG
-   ============================================================ */
+/* guia matérias + config */
 function renderSubjectsTab() {
   renderSubjectsByDay();
   renderSubjectList();
@@ -687,7 +806,7 @@ function renderSubjectsByDay() {
         <div class="mc-line">${def.time}</div>
         ${(subj.prof || subj.profEmail) ? `<div class="mc-prof">
           ${subj.prof ? `<span>${esc(subj.prof)}</span>` : ""}
-          ${subj.profEmail ? `<span class="mc-email" data-email="${esc(subj.profEmail)}" role="button" title="Copiar e-mail">${esc(subj.profEmail)}</span>` : ""}
+          ${subj.profEmail ? `<span class="mc-email" data-email="${esc(subj.profEmail)}" role="button" title="${t("subjects.copy_email")}">${esc(subj.profEmail)}</span>` : ""}
         </div>` : ""}`;
       block.appendChild(card);
     }
@@ -696,7 +815,7 @@ function renderSubjectsByDay() {
   if (!any) wrap.innerHTML = `<p class="muted small" style="padding:4px 2px 14px">${t("subjects.none_scheduled")}</p>`;
 }
 
-/* Config / conta */
+/* config / conta */
 function renderSettings() { renderAccount(); }
 
 function renderAccount() {
@@ -721,7 +840,7 @@ async function deleteAccount() {
   const ok = await uiConfirm(t("acc.delete_confirm"), { danger: true, yesLabel: t("acc.delete_yes"), countdown: 10 });
   if (!ok) return;
   try { if (cloudUserId) await M87Cloud.deleteData(cloudUserId); } catch (e) { console.error(e); }
-  // remove de fato o usuário do Auth (via função no banco) — sem isso, a conta continuaria existindo
+  // remove de fato o usuário do Auth (via função no banco)
   let removed = false;
   try { await M87Cloud.deleteAccount(); removed = true; } catch (e) { console.error(e); }
   try { await M87Cloud.signOut(); } catch (e) { console.error(e); }
@@ -755,7 +874,7 @@ function renderSubjectList() {
   }
 }
 
-/* ---- Editor de matéria ---- */
+/* editor de matéria */
 let editingSubjectId = null;
 let editingColor = PALETTE[0];
 
@@ -877,7 +996,7 @@ async function deleteSubject() {
   closeModals(); renderAll();
 }
 
-/* ---- Editor de semestre (modal customizado) ---- */
+/* editor de semestre (modal customizado) */
 let editingSemesterKey = null;
 function semNumberFromLabel(label) { return parseInt(label, 10) || 1; }
 /* rótulo do semestre montado no idioma atual (a partir de campos estruturados;
@@ -903,8 +1022,10 @@ function openSemesterEditor(key, welcome) {
 
   $("#semNumber").innerHTML = Array.from({ length: 18 }, (_, i) => `<option value="${i + 1}">${t("sem.nth", { n: i + 1 })}</option>`).join("");
   const yNow = new Date().getFullYear();
-  const ySel = $("#semYear"); ySel.innerHTML = "";
-  for (let y = yNow - 2; y <= yNow + 5; y++) ySel.innerHTML += `<option value="${y}">${y}</option>`;
+  const ySel = $("#semYear");
+  const years = [];
+  for (let y = yNow - 2; y <= yNow + 5; y++) years.push(`<option value="${y}">${y}</option>`);
+  ySel.innerHTML = years.join("");
 
   if (sem) {
     $("#semNumber").value = String(semParts(sem).num);
@@ -965,7 +1086,7 @@ async function deleteSemester(key) {
   toast(t("sem.deleted"));
 }
 
-/* ---- Diálogos personalizados (substituem alert/confirm/prompt do SO) ---- */
+/* diálogos personalizados (substituem alert/confirm/prompt do SO) */
 let _confirmCb = null, _confirmIsPrompt = false, _cdTimer = null;
 function _openConfirm({ title = t("confirm.title"), message, yesLabel = t("confirm.yes"), danger = false, prompt = false, placeholder = "", countdown = 0 }) {
   return new Promise(resolve => {
@@ -1000,7 +1121,7 @@ function resolveConfirm(val) {
   if (cb) cb(val);
 }
 
-/* ---- Backup ---- */
+/* apagar dados / sobre */
 async function wipeAllData() {
   const ok = await uiConfirm(t("acc.wipe_confirm"), { danger: true, yesLabel: t("acc.wipe_yes"), countdown: 10 });
   if (!ok) return;
@@ -1020,11 +1141,10 @@ function openAbout() {
   showModal("#aboutModal");
 }
 
-/* ============================================================
-   MODAIS / NAV
-   ============================================================ */
+/* modais / nav */
 function showModal(sel) { $(sel).hidden = false; }
 function closeModals() {
+  clearInterval(_cdTimer);   // evita vazar o timer da contagem regressiva ao fechar pelo X / fora
   $$(".modal-overlay").forEach(m => (m.hidden = true));
   if (_confirmCb) { const cb = _confirmCb; _confirmCb = null; cb(_confirmIsPrompt ? null : false); }
 }
@@ -1075,8 +1195,7 @@ function selectSemester(key) {
 }
 
 function switchView(view) {
-  // retorno de segurança: ao sair do calendário (que pode ter trocado de semestre
-  // sozinho ao navegar), volta para o semestre de hoje, evitando confusão
+  // retorno de segurança ao sair do calendário
   if (view !== "calendar" && autoSwitched) {
     autoSwitched = false;
     data.activeSemester = currentSemesterKey();
@@ -1091,13 +1210,20 @@ function switchView(view) {
   if (view === "subjects") renderSubjectsTab();
   if (view === "calendar") renderCalendar();
   if (view === "settings") renderSettings();
-  $("#fab").hidden = (view === "settings" || view === "subjects"); // FAB só no Painel/Calendário
+  $("#fab").hidden = (view === "settings" || view === "subjects"); // FAB só no painel/calendário
   if (location.hash.slice(1) !== view) history.replaceState(null, "", "#" + view);
 }
 
-function renderAll() { renderDashboard(); renderCalendar(); renderSubjectsTab(); }
+/* renderiza apenas a guia visível; as demais são re-renderizadas ao trocar de guia
+   (switchView), evitando trabalho com views ocultas a cada edição */
+function renderAll() {
+  if (activeView === "subjects") renderSubjectsTab();
+  else if (activeView === "calendar") renderCalendar();
+  else if (activeView === "settings") renderSettings();
+  else renderDashboard();
+}
 
-/* ---------- Idioma ---------- */
+/* idioma */
 function applyLang() {
   document.documentElement.lang = getLang() === "pt" ? "pt-BR" : getLang();
   applyStaticI18n();
@@ -1108,6 +1234,9 @@ function applyLang() {
   if (!$("#auth").hidden) setAuthMode(authMode);     // reaplica os rótulos do login
   updateSemesterButton();
   if (cloudUserId) renderAccount();
+  buildKbdHints();
+  setConn(_connState);          // reaplica o texto de conexão no idioma atual
+  renderInstallButton();
   renderAll();
 }
 function setLanguage(l) {
@@ -1116,7 +1245,7 @@ function setLanguage(l) {
   toast(t("misc.lang_changed"));
 }
 
-/* ---------- Menu lateral recolhível (desktop) ---------- */
+/* menu lateral recolhível (desktop) */
 function applyNavCollapsed(state) {
   document.documentElement.classList.toggle("nav-collapsed", !!state);
   localStorage.setItem("m87.navCollapsed", state ? "1" : "0");
@@ -1127,9 +1256,30 @@ function toggleNav() {
   applyNavCollapsed(!document.documentElement.classList.contains("nav-collapsed"));
 }
 
-/* ============================================================
-   EVENTOS
-   ============================================================ */
+/* barra de atalhos de teclado (só aparece no desktop, via CSS) */
+function buildKbdHints() {
+  let el = $("#kbdHints");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "kbdHints";
+    el.className = "kbd-hints";
+    document.body.appendChild(el);
+  }
+  const groups = [
+    { keys: ["1", "2", "3", "4"], label: t("kbd.tabs") },
+    { keys: ["←", "→"], label: t("kbd.month") },
+    { keys: ["H"], label: t("kbd.today") },
+    { keys: ["N"], label: t("kbd.new") },
+    { keys: ["Esc"], label: t("kbd.esc") },
+  ];
+  el.innerHTML =
+    `<span class="kbd-title">${t("kbd.title")}</span>` +
+    groups.map(g =>
+      `<span class="kbd-group">${g.keys.map(k => `<kbd class="kbd">${k}</kbd>`).join("")}<span class="kbd-label">${g.label}</span></span>`
+    ).join("");
+}
+
+/* eventos */
 function bindEvents() {
   $("#semesterBtn").onclick = openSemesterPicker;
   $$(".nav-btn").forEach(b => b.onclick = () => switchView(b.dataset.view));
@@ -1137,25 +1287,17 @@ function bindEvents() {
   $("#calNext").onclick = () => calShift(1);
   $("#calToday").onclick = goToday;
 
-  // deslizar para trocar de mês no calendário
-  let _sx = null, _sy = null;
   const cg = $("#calGrid");
-  cg.addEventListener("touchstart", e => { _sx = e.changedTouches[0].clientX; _sy = e.changedTouches[0].clientY; }, { passive: true });
-  cg.addEventListener("touchend", e => {
-    if (_sx === null) return;
-    const dx = e.changedTouches[0].clientX - _sx;
-    const dy = e.changedTouches[0].clientY - _sy;
-    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      lastSwipe = Date.now();
-      calShift(dx < 0 ? 1 : -1);
-    }
-    _sx = _sy = null;
-  }, { passive: true });
+  cg.addEventListener("click", e => {
+    const cell = e.target.closest(".cal-cell.classday");
+    if (cell && Date.now() - lastSwipe >= 400) openDayModal(cell.dataset.date); // ignora clique logo após deslizar
+  });
 
   $("#fab").onclick = () => {
-    const today = new Date();
     const sem = activeSem();
-    let d = (today >= parseDate(sem.start) && today <= parseDate(sem.end)) ? today : parseDate(sem.start);
+    if (!sem) { openSemesterEditor(null); return; }   // sem semestre ativo: leva a criar um
+    const today = new Date();
+    const d = (today >= parseDate(sem.start) && today <= parseDate(sem.end)) ? today : parseDate(sem.start);
     openDayModal(fmtDate(d.getFullYear(), d.getMonth(), d.getDate()));
   };
 
@@ -1197,24 +1339,30 @@ function bindEvents() {
   $$("#langSeg .lang-btn").forEach(b => b.onclick = () => setLanguage(b.dataset.lang));
   $("#navCollapse").onclick = toggleNav;
 
-  // deslizar troca de guia (mobile) — funciona em qualquer área, exceto o grid de datas
-  const order = ["subjects", "dashboard", "calendar", "settings"];
-  let _mx = null, _my = null, _mt = null;
+  // gesto de deslizar: dentro da grade do calendário = troca o mês; fora dela = troca a guia
+  const swipeOrder = ["subjects", "dashboard", "calendar", "settings"];
+  let _gx = null, _gy = null, _gt = null;
   document.addEventListener("touchstart", e => {
-    _mx = e.changedTouches[0].clientX; _my = e.changedTouches[0].clientY; _mt = e.target;
+    _gx = e.changedTouches[0].clientX; _gy = e.changedTouches[0].clientY; _gt = e.target;
   }, { passive: true });
   document.addEventListener("touchend", e => {
-    if (_mx === null) return;
-    const dx = e.changedTouches[0].clientX - _mx, dy = e.changedTouches[0].clientY - _my;
-    const t = _mt; _mx = _my = _mt = null;
-    if (!t || !t.closest) return;
-    // não troca de guia em: modais, nav, tela de login e o campo das datas do calendário
-    if (t.closest(".modal-overlay") || t.closest(".bottom-nav") || t.closest("#calGrid") || !$("#auth").hidden) return;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-      const cur = order.indexOf(activeView);
-      const next = Math.max(0, Math.min(order.length - 1, cur + (dx < 0 ? 1 : -1)));
-      if (next !== cur) switchView(order[next]);
+    if (_gx === null) return;
+    const dx = e.changedTouches[0].clientX - _gx, dy = e.changedTouches[0].clientY - _gy;
+    const startY = _gy, tgt = _gt; _gx = _gy = _gt = null;
+    if (!tgt || !tgt.closest) return;
+    if (tgt.closest(".modal-overlay") || tgt.closest(".bottom-nav") || !$("#auth").hidden) return;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.4) return;   // não é horizontal o suficiente
+    // dentro da faixa vertical da grade do calendário (e na guia calendário) -> troca o mês
+    const r = $("#calGrid").getBoundingClientRect();
+    if (activeView === "calendar" && r.height && startY >= r.top && startY <= r.bottom) {
+      lastSwipe = Date.now();
+      calShift(dx < 0 ? 1 : -1);
+      return;
     }
+    // fora -> troca a guia
+    const cur = swipeOrder.indexOf(activeView);
+    const next = Math.max(0, Math.min(swipeOrder.length - 1, cur + (dx < 0 ? 1 : -1)));
+    if (next !== cur) switchView(swipeOrder[next]);
   }, { passive: true });
 
   $$("[data-close-modal]").forEach(b => b.onclick = closeModals);
@@ -1238,14 +1386,14 @@ function bindEvents() {
   });
 }
 
-/* ============================================================
-   AUTENTICAÇÃO / NUVEM (Supabase) — opcional
-   ============================================================ */
+/* autenticação / nuvem (supabase) — opcional */
 let authMode = "login";
 function authMsg(msg) { $("#authMsg").textContent = msg || ""; }
 
+let _authFxStarted = false;
 function showAuth() {
   $("#auth").hidden = false;
+  if (!_authFxStarted) { _authFxStarted = true; startParticles($("#authFx"), { mode: "orbit", areaPer: 16000, max: 90 }); }   // canvas só tem tamanho com o login visível
   setAuthMode("login");
 }
 function setAuthMode(mode) {
@@ -1256,7 +1404,7 @@ function setAuthMode(mode) {
   authMsg("");
 }
 
-/* traduz as mensagens de erro do Supabase (vêm em inglês) para o idioma atual */
+/* traduz as mensagens de erro do supabase para o idioma atual */
 function translateAuthError(e) {
   const msg = ((e && (e.message || e.error_description)) || "") + "";
   const code = (e && e.code) || "";
@@ -1287,8 +1435,7 @@ async function doAuthPrimary() {
       if (!username) { authMsg(t("auth.choose_user")); return; }
       if (!/@([a-z0-9-]+\.)*usp\.br$/i.test(email)) { authMsg(t("auth.usp_only")); return; }
       const res = await M87Cloud.signUp(email, pw, username);
-      // O Supabase devolve "sucesso" mesmo quando o e-mail já existe (proteção contra
-      // descoberta de contas): nesse caso, user.identities vem vazio.
+      // O supabase devolve "sucesso" mesmo quando o e-mail já existe (proteção contra descoberta de contas): nesse caso, user.identities vem vazio.
       const jaExiste = res.user && Array.isArray(res.user.identities) && res.user.identities.length === 0;
       if (jaExiste) { setAuthMode("login"); authMsg(t("auth.exists")); return; }
       if (res.session && res.user) await enterApp(res.user);
@@ -1302,7 +1449,7 @@ let _lastForgot = 0;
 async function doForgot() {
   const email = $("#authEmail").value.trim();
   if (!email) { authMsg(t("auth.forgot_need_email")); return; }
-  // evita disparar vários e-mails seguidos (e o erro "rate limit" do Supabase)
+  // evita disparar vários e-mails seguidos (e o erro "rate limit" do supabase)
   if (Date.now() - _lastForgot < 60000) { authMsg(t("auth.rate")); return; }
   _lastForgot = Date.now();
   try { await M87Cloud.resetPassword(email); authMsg(t("auth.forgot_sent")); }
@@ -1356,6 +1503,7 @@ async function enterApp(user) {
   if (!activeSem()) openSemesterEditor(null, true);    // boas-vindas: escolher o semestre
   if ("Notification" in window && Notification.permission === "default") { try { Notification.requestPermission(); } catch (e) {} }
   try { M87Cloud.subscribe(user.id, handleRealtime); } catch (e) { console.error(e); }
+  maybeShowUpdateNotes();
 }
 
 /* mudança vinda de outro aparelho (tempo real) */
@@ -1383,9 +1531,7 @@ function bindAuthEvents() {
   $("#authPassword").addEventListener("keydown", e => { if (e.key === "Enter") doAuthPrimary(); });
 }
 
-/* ============================================================
-   INIT
-   ============================================================ */
+/* init */
 function applyHashView() {
   const hv = location.hash.slice(1);
   if (["subjects", "calendar", "settings"].includes(hv)) switchView(hv);
@@ -1394,10 +1540,42 @@ function hideSplash() {
   const sp = $("#splash");
   if (sp) { sp.classList.add("hide"); setTimeout(() => sp.remove(), 450); }
 }
-function registerSW() {
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+/* aviso de nova versão disponível (PWA) */
+function showUpdateBanner() {
+  if ($("#updateBanner")) return;                 // já aberto
+  const el = document.createElement("div");
+  el.id = "updateBanner";
+  el.className = "update-banner";
+  el.innerHTML =
+    `<span>${t("update.available")}</span>` +
+    `<button class="btn btn-sm btn-primary" id="updateReload">${t("update.reload")}</button>` +
+    `<button class="btn btn-sm btn-ghost" id="updateDismiss">${t("update.dismiss")}</button>`;
+  document.body.appendChild(el);
+  $("#updateReload").onclick = () => { localStorage.setItem("m87.updated", "1"); location.reload(); };
+  $("#updateDismiss").onclick = () => el.remove();
+}
+/* após recarregar por uma atualização, mostra as notas da versão uma vez */
+function maybeShowUpdateNotes() {
+  if (localStorage.getItem("m87.updated")) {
+    localStorage.removeItem("m87.updated");
+    setTimeout(() => { if (!$("#auth") || $("#auth").hidden) openAbout(); }, 500);
   }
+}
+function registerSW() {
+  if (!("serviceWorker" in navigator)) return;
+  // se já havia um SW controlando ao carregar, uma troca de controlador = nova versão publicada
+  let hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadController) showUpdateBanner();
+    hadController = true;
+  });
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").then(reg => {
+      // procura atualização de tempos em tempos e ao voltar para a aba
+      setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
+    }).catch(() => {});
+  });
 }
 
 async function cloudInit() {
@@ -1420,10 +1598,13 @@ async function init() {
   setConn(navigator.onLine ? "online" : "offline");
   window.addEventListener("online", updateConn);
   window.addEventListener("offline", () => setConn("offline"));
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); _deferredInstall = e; renderInstallButton(); });
+  window.addEventListener("appinstalled", () => { _deferredInstall = null; _relatedInstalled = true; renderInstallButton(); });
+  checkInstalled();
+  startParticles($("#bgFx"), { mode: "drift", areaPer: 46000, max: 24 });   // app: poucas partículas, movimento linear
   if (typeof M87Cloud !== "undefined" && M87Cloud.configured()) {
     const ok = await M87Cloud.ensureLib();
-    if (ok) { cloudInit(); return; }   // login + dados na nuvem
-    // configurado, mas a biblioteca não carregou: mostra o login com aviso (não usa o seed)
+    if (ok) { cloudInit(); return; }   // login + dados na nuvem configurado, mas a biblioteca não carregou: mostra o login com aviso (não usa o seed)
     hideSplash();
     showAuth();
     authMsg(t("auth.lib_fail"));
@@ -1434,5 +1615,6 @@ async function init() {
   renderAll();
   applyHashView();
   setTimeout(hideSplash, 1100);
+  maybeShowUpdateNotes();
 }
 init();

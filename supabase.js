@@ -1,12 +1,6 @@
-/* ============================================================
-   M87 — Camada de nuvem (Supabase): login e dados por usuário
-   ------------------------------------------------------------
-   Preencha SUPABASE_URL e SUPABASE_ANON_KEY com os dados do seu
-   projeto (no painel do Supabase: Project Settings → API).
-   Se ficarem vazios, o app roda 100% local (sem tela de login).
-   ============================================================ */
-const SUPABASE_URL = "https://fxuxkzpwwknhofhajvkk.supabase.co";       // ex: https://abcdxyz.supabase.co
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4dXhrenB3d2tuaG9maGFqdmtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODIxNTgsImV4cCI6MjA5Njg1ODE1OH0.Kt51uwGtZgmrPiO0DvAnxEi6nJ9TWPMK51NcL_aTdtw";  // a chave "anon public"
+/* supabase: login e dados por usuário */
+const SUPABASE_URL = "https://fxuxkzpwwknhofhajvkk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4dXhrenB3d2tuaG9maGFqdmtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODIxNTgsImV4cCI6MjA5Njg1ODE1OH0.Kt51uwGtZgmrPiO0DvAnxEi6nJ9TWPMK51NcL_aTdtw";
 
 const M87Cloud = (() => {
   let client = null;
@@ -67,7 +61,7 @@ const M87Cloud = (() => {
       options: { data: { username: username || "" } },
     });
     if (error) throw error;
-    return data; // { user, session } (session é null se exigir confirmação por e-mail)
+    return data; // { user, session } (session é null se exigir confirmação por email)
   }
   async function resetPassword(email) {
     const redirectTo = location.href.split("#")[0];
@@ -82,7 +76,7 @@ const M87Cloud = (() => {
     if (enabled()) await getClient().auth.signOut();
   }
 
-  /* Dados: uma linha por usuário na tabela app_data (coluna data jsonb) */
+  /* uma linha por usuário na tabela app_data (coluna data jsonb) */
   async function loadData(userId) {
     const { data, error } = await getClient()
       .from("app_data").select("data").eq("user_id", userId).maybeSingle();
@@ -98,13 +92,13 @@ const M87Cloud = (() => {
     const { error } = await getClient().from("app_data").delete().eq("user_id", userId);
     if (error) throw error;
   }
-  // remove a própria conta do Auth (precisa da função delete_user criada no banco)
+  // remove a própria conta do auth (precisa da função delete_user criada no banco)
   async function deleteAccount() {
     const { error } = await getClient().rpc("delete_user");
     if (error) throw error;
   }
 
-  /* tempo real: avisa quando a linha do usuário muda (de outro aparelho) */
+  /* avisa quando a linha do usuário muda (de outro aparelho) */
   function subscribe(userId, cb) {
     if (!enabled()) return null;
     return getClient()

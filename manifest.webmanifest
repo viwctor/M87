@@ -1,6 +1,6 @@
 {
   "id": "./",
-  "name": "M87 — Controle de Faltas",
+  "name": "M87",
   "short_name": "M87",
   "description": "Controle de frequência e faltas por semestre para estudantes da USP. Acompanhe quantas faltas ainda pode ter em cada matéria, com sincronização na nuvem.",
   "start_url": "./",
@@ -13,6 +13,10 @@
   "lang": "pt-BR",
   "dir": "ltr",
   "categories": ["education", "productivity"],
+  "prefer_related_applications": false,
+  "related_applications": [
+    { "platform": "webapp", "url": "https://m-87.netlify.app/manifest.webmanifest" }
+  ],
   "icons": [
     { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

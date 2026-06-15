@@ -1,15 +1,9 @@
-<!-- ============================================================
-     M87 — Template de e-mail: REDEFINIR SENHA
-     Cole este HTML em: Supabase → Authentication → Email Templates → "Reset Password"
-     Assunto sugerido: Redefinir sua senha do M87
-     Variáveis usadas: {{ .ConfirmationURL }} e {{ .Data.username }}
-     ============================================================ -->
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0;padding:24px 0;background:#050507;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0;padding:24px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <tr>
     <td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#0f0f14;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;">
 
-        <!-- Banner -->
+        <!-- banner -->
         <tr>
           <td align="center" bgcolor="#0b0b0f" style="background:#0b0b0f;background:linear-gradient(135deg,#2a1404 0%,#0b0b0f 60%);padding:30px 24px 26px;">
             <img src="https://m-87.netlify.app/icons/icon-192.png" width="58" height="58" alt="M87" style="display:block;border-radius:15px;margin:0 auto 12px;" />
@@ -18,7 +12,7 @@
           </td>
         </tr>
 
-        <!-- Corpo -->
+        <!-- corpo -->
         <tr>
           <td style="padding:30px 30px 6px;color:#f4f4f7;">
             <p style="font-size:18px;font-weight:700;margin:0 0 12px;">Olá{{ if .Data.username }}, {{ .Data.username }}{{ end }}!</p>
@@ -28,7 +22,7 @@
           </td>
         </tr>
 
-        <!-- Botão -->
+        <!-- botão -->
         <tr>
           <td align="center" style="padding:0 30px 6px;">
             <table role="presentation" cellpadding="0" cellspacing="0">
@@ -41,7 +35,7 @@
           </td>
         </tr>
 
-        <!-- Link alternativo -->
+        <!-- link alternativo -->
         <tr>
           <td style="padding:20px 30px 0;color:#6a6a76;font-size:12px;line-height:1.6;">
             Se o botão não funcionar, copie e cole este endereço no navegador:<br />
@@ -49,7 +43,7 @@
           </td>
         </tr>
 
-        <!-- Rodapé -->
+        <!-- rodapé -->
         <tr>
           <td style="padding:24px 30px;margin-top:10px;color:#6a6a76;font-size:11.5px;line-height:1.6;border-top:1px solid rgba(255,255,255,0.06);">
             Se você não pediu para redefinir a senha, ignore este e-mail: sua senha atual continua valendo.
@@ -57,7 +51,7 @@
         </tr>
 
       </table>
-      <div style="font-size:11px;color:#4a4a55;margin-top:16px;">M87 · Controle de faltas para estudantes da USP</div>
+      <div style="font-size:11px;color:#888888;margin-top:16px;">M87 · Controle de faltas para estudantes da USP</div>
     </td>
   </tr>
 </table>

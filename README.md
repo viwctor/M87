@@ -37,15 +37,15 @@ across devices.
 
 ## Install on your device
 
-M87 can be installed as an app, with its own icon, a dedicated window and offline support.
+M87 can be installed as an app, with its own icon and a dedicated window.
 
 | Android (Chrome) | iOS (Safari) |
 | :---: | :---: |
 | ![Install on Android](docs/install-android.gif) | ![Install on iOS](docs/install-ios.gif) |
 
-- Android (Chrome): open the site, open the menu and choose Install app.
+- Android (Chrome): open the site, open the menu ⋮ and choose Add to Home Screen.
 - iOS and iPadOS (Safari): open the site, tap Share and choose Add to Home Screen.
-- Desktop (Chrome or Edge): open the site and click the install icon in the address bar.
+- Desktop (Chrome or Edge): open the site and click the install icon in the address bar. Alternatively, open the ⋮ menu, then choose "Cast, save, and share" and click Install M87.
 
 ## Overview
 
@@ -168,7 +168,8 @@ python -m http.server 8080
 # then open http://localhost:8080
 ```
 
-On Windows you can also run the included `_serve.ps1`.
+On Windows you can also just double-click `start.bat`, which starts a local
+server and opens the browser. It works from any folder.
 
 ### Backend configuration (optional)
 
