@@ -122,6 +122,7 @@ const I18N = {
     "subj.saved": "Matéria salva ✓",
     "subj.create_sem_first": "Crie um semestre primeiro.",
     "subj.limit": "Limite de 14 matérias por semestre.",
+    "subj.meeting_limit": "Máximo de {n} horários por matéria.",
     "subj.delete_confirm": "Excluir esta matéria? As faltas dela serão desconsideradas.",
     "subj.remove_meeting": "Remover",
 
@@ -333,6 +334,7 @@ const I18N = {
     "subj.saved": "Subject saved ✓",
     "subj.create_sem_first": "Create a semester first.",
     "subj.limit": "Limit of 14 subjects per semester.",
+    "subj.meeting_limit": "Maximum of {n} class times per subject.",
     "subj.delete_confirm": "Delete this subject? Its absences will be disregarded.",
     "subj.remove_meeting": "Remove",
 
@@ -544,6 +546,7 @@ const I18N = {
     "subj.saved": "Materia guardada ✓",
     "subj.create_sem_first": "Crea un semestre primero.",
     "subj.limit": "Límite de 14 materias por semestre.",
+    "subj.meeting_limit": "Máximo de {n} horarios por materia.",
     "subj.delete_confirm": "¿Eliminar esta materia? Sus faltas serán descartadas.",
     "subj.remove_meeting": "Quitar",
 

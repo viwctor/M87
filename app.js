@@ -38,6 +38,9 @@ const PALETTE = [
   "linear-gradient(135deg, #ff4d4d, #ff2d6f)",  // vermelho
 ];
 
+/* limite de horários (encontros) por matéria, para não inflar o armazenamento */
+const MAX_MEETINGS = 8;
+
 /* horários possíveis, em ordem cronológica */
 const SLOT_DEFS = [
   { id: "m1", time: "08:00 – 09:40", short: "08h",   start: "08:00", label: "1ª aula", shift: "Manhã" },
@@ -951,7 +954,7 @@ function meetingRow(m) {
 }
 
 function collectMeetings() {
-  return $$("#meetingList .meeting-row").slice(0, 20).map(r => {
+  return $$("#meetingList .meeting-row").slice(0, MAX_MEETINGS).map(r => {
     let slot = $(".meet-slot", r).value;
     if (slot === "custom") {
       const s = $(".meet-start", r).value || "08:00";
@@ -968,6 +971,7 @@ function saveSubject() {
   const name = clampText($("#subjName").value.trim(), 80);
   if (!name) { toast(t("subj.name_required")); return; }
   const sem = activeSem();
+  if (!sem) { closeModals(); return; }   // semestre sumiu (ex: removido em outro aparelho)
   const payload = {
     name,
     prof: clampText($("#subjProf").value.trim(), 80),
@@ -977,7 +981,9 @@ function saveSubject() {
     meetings: collectMeetings(),
   };
   if (editingSubjectId) {
-    Object.assign(sem.subjects.find(s => s.id === editingSubjectId), payload);
+    const existing = sem.subjects.find(s => s.id === editingSubjectId);
+    if (existing) Object.assign(existing, payload);
+    else sem.subjects.push({ id: editingSubjectId, ...payload });   // removida durante a edição -> recria
   } else {
     sem.subjects.push({ id: "s_" + Date.now().toString(36), ...payload });
   }
@@ -1056,7 +1062,7 @@ function saveSemesterFromModal() {
   const { start, end } = periodDates(period, year);
   // label canônico (pt) só como reserva; a exibição usa semDisplayLabel() no idioma atual
   const label = `${num}º Semestre (${period === "ago" ? "Ago - Dez" : "Fev - Jun"} ${year})`;
-  if (editingSemesterKey) {
+  if (editingSemesterKey && data.semesters[editingSemesterKey]) {
     Object.assign(data.semesters[editingSemesterKey], { label, start, end, num, period, year });
   } else {
     let key = `${year}.${period === "fev" ? 1 : 2}`;
@@ -1322,7 +1328,10 @@ function bindEvents() {
   $("#addSubjectBtn").onclick = () => openSubjectEditor(null);
   $("#subjectSaveBtn").onclick = saveSubject;
   $("#deleteSubjectBtn").onclick = deleteSubject;
-  $("#addMeetingBtn").onclick = () => $("#meetingList").appendChild(meetingRow({ weekday: 1, slot: data.lastCustomTime || "n1", room: "" }));
+  $("#addMeetingBtn").onclick = () => {
+    if ($$("#meetingList .meeting-row").length >= MAX_MEETINGS) { toast(t("subj.meeting_limit", { n: MAX_MEETINGS })); return; }
+    $("#meetingList").appendChild(meetingRow({ weekday: 1, slot: data.lastCustomTime || "n1", room: "" }));
+  };
   $("#semSaveBtn").onclick = saveSemesterFromModal;
   $("#semDeleteBtn").onclick = () => { const k = editingSemesterKey; closeModals(); deleteSemester(k); };
 
