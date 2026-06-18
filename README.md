@@ -22,13 +22,13 @@ across devices.
 
 | Absences | Calendar | Subjects |
 | :---: | :---: | :---: |
-| ![Absences tab](docs/dashboard.png) | ![Calendar tab](docs/calendar.png) | ![Subjects tab](docs/subjects.png) |
+| ![Absences tab](docs/dashboard.png?v=2) | ![Calendar tab](docs/calendar.png?v=2) | ![Subjects tab](docs/subjects.png?v=2) |
 
 ## Demo
 
 <div align="center">
 
-![M87 walkthrough](docs/demo.gif)
+![M87 walkthrough](docs/demo.gif?v=2)
 
 </div>
 
@@ -38,7 +38,7 @@ M87 can be installed as an app, with its own icon and a dedicated window.
 
 | Android (Chrome) | iOS (Safari) |
 | :---: | :---: |
-| ![Install on Android](docs/install-android.gif) | ![Install on iOS](docs/install-ios.gif) |
+| ![Install on Android](docs/install-android.gif?v=2) | ![Install on iOS](docs/install-ios.gif?v=2) |
 
 - Android (Chrome): open the site, open the menu ⋮ and choose Add to Home Screen.
 - iOS and iPadOS (Safari): open the site, tap Share and choose Add to Home Screen.
@@ -115,7 +115,7 @@ The absence limit follows the USP rule of a maximum of 25 percent of missed clas
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | HTML5, CSS3, vanilla JavaScript (ES2020) |
+| Frontend | HTML5, CSS3, vanilla JavaScript (ES2021) |
 | PWA | Web App Manifest, Service Worker (network-first) |
 | Internationalization | Custom dictionary (Portuguese, English, Spanish) |
 | Authentication | Supabase Auth (USP email enforced by trigger) |
@@ -161,12 +161,12 @@ No dependencies and no build step. Serve the folder over HTTP, since a service w
 requires `http://` or `https://` rather than `file://`.
 
 ```bash
-python -m http.server 8080
-# then open http://localhost:8080
+python -m http.server 8700
+# then open http://localhost:8700
 ```
 
 On Windows you can also just double-click `start.bat`, which starts a local
-server and opens the browser. It works from any folder.
+server on port 8700 and opens the browser. It works from any folder.
 
 ### Backend configuration (optional)
 
