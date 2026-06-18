@@ -17,7 +17,7 @@
   limite: 4 créditos = 8 faltas; 2 créditos = 4 faltas; */
 
 const STORE_KEY = "m87.data";
-const APP_VERSION = "1.1";
+const APP_VERSION = "1.2";
 
 /* id único deste aparelho (para ignorar o eco das próprias escritas no tempo real) */
 const DEVICE_ID = (() => {
@@ -96,6 +96,7 @@ function loadData() {
 
 /* migra dados antigos (slots numéricos 1/2 = noite) para o novo formato */
 function migrate(d) {
+  d.semesters = d.semesters || {};   // blindagem: dado parcial/corrompido não pode derrubar o app
   d.occ = d.occ || {};
   d.marks = d.marks || {};
   d.notes = d.notes || {};
@@ -117,8 +118,8 @@ function migrate(d) {
     }
   }
   // garante que o semestre ativo realmente existe (protege contra dados corrompidos)
-  if (d.semesters && !d.semesters[d.activeSemester]) {
-    d.activeSemester = Object.keys(d.semesters)[0];
+  if (!d.semesters[d.activeSemester]) {
+    d.activeSemester = Object.keys(d.semesters)[0] || null;
   }
   d.version = 2;
   return d;

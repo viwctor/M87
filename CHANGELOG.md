@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.2] - 2026-06-18
+
+### Changed
+- General optimization pass and stability hardening across the app.
+
+### Fixed
+- `migrate()` now always guarantees a valid `semesters` map, so partial or corrupted saved data (local or from a realtime update on another device) can no longer crash the app on load.
+
 ## [1.1] - 2026-06-15
 
 ### Added
