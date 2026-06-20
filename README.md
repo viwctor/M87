@@ -2,7 +2,7 @@
 
 <img src="icons/icon-192.png" width="96" height="96" alt="M87 logo" />
 
-# M87 · Class Attendance Tracker
+# M87
 
 A cloud-synchronized Progressive Web Application for University of Sao Paulo (USP)
 students to track attendance, manage academic schedules and monitor absence limits
