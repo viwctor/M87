@@ -8,10 +8,6 @@ A cloud-synchronized Progressive Web Application for University of Sao Paulo (US
 students to track attendance, manage academic schedules and monitor absence limits
 across devices.
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/1f511dd9-3fe2-49fd-b7d6-7cd156de54f1/deploy-status)](https://app.netlify.com/projects/m-87/deploys)
-[![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](https://m-87.netlify.app)
-[![Supabase](https://img.shields.io/badge/Supabase-auth%20%26%20realtime-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
-
 **Live demo:** [m-87.netlify.app](https://m-87.netlify.app)
 
 </div>
