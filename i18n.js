@@ -150,6 +150,10 @@ const I18N = {
     "set.about": "Sobre",
     "set.about_btn": "Sobre o aplicativo",
     "set.language": "Idioma",
+    "set.theme": "Tema",
+    "theme.dark": "Escuro",
+    "theme.light": "Claro",
+    "theme.toggle": "Alternar tema",
     "set.account": "Conta",
     "set.account_sub": "Toque para gerenciar a conta",
 
@@ -176,7 +180,7 @@ const I18N = {
     "about.made_with": "Desenvolvido com",
     "about.made_by": "por",
     "about.changelog":
-      "Versão 1.2:\n * Otimização e correção de bugs;\n * Maior estabilidade e proteção dos seus dados;\n\nVersão 1.1:\n * Novos efeitos visuais, logo e ícones renovados;\n * Botão “Instalar app” com instruções para cada navegador;\n * Janela de sem conexão remodelada e notas exibidas após atualizar;\n\nVersão 1.0:\n * E-mails de confirmação e recuperação personalizados;\n * Mensagens de erro corrigidas no login;\n * Otimização e correção de bugs;\n\nNovidades 0.9:\n * Sincronização em tempo real entre aparelhos;\n * Idiomas: português, inglês e espanhol;\n * Indicador de conexão (online/instável/offline);\n",
+      "Versão 1.3:\n * Novo tema claro, com troca rápida no login e nos ajustes;\n * Pequenas melhorias e correções;\n\nVersão 1.2:\n * Otimização e correção de bugs;\n * Maior estabilidade e proteção dos seus dados;\n\nVersão 1.1:\n * Novos efeitos visuais, logo e ícones renovados;\n * Botão “Instalar app” com instruções para cada navegador;\n * Janela de sem conexão remodelada e notas exibidas após atualizar;\n\nVersão 1.0:\n * E-mails de confirmação e recuperação personalizados;\n * Mensagens de erro corrigidas no login;\n * Otimização e correção de bugs;\n\nNovidades 0.9:\n * Sincronização em tempo real entre aparelhos;\n * Idiomas: português, inglês e espanhol;\n * Indicador de conexão (online/instável/offline);\n",
 
     "misc.copied_email": "E-mail copiado ✓",
     "misc.offline": "Sem conexão com a rede.",
@@ -184,6 +188,7 @@ const I18N = {
     "misc.retry": "Tentar novamente",
     "misc.updated_other": "Atualizado de outro aparelho ⟳",
     "misc.lang_changed": "Idioma alterado ✓",
+    "misc.theme_changed": "Tema alterado ✓",
     "misc.close": "Fechar",
 
     "kbd.title": "atalhos",
@@ -362,6 +367,10 @@ const I18N = {
     "set.about": "About",
     "set.about_btn": "About the app",
     "set.language": "Language",
+    "set.theme": "Theme",
+    "theme.dark": "Dark",
+    "theme.light": "Light",
+    "theme.toggle": "Toggle theme",
     "set.account": "Account",
     "set.account_sub": "Tap to manage your account",
 
@@ -388,7 +397,7 @@ const I18N = {
     "about.made_with": "Built with",
     "about.made_by": "by",
     "about.changelog":
-      "Version 1.2:\n * Optimization and bug fixes;\n * Greater stability and data protection;\n\nVersion 1.1:\n * New visual effects, refreshed logo and icons;\n * “Install app” button with per-browser instructions;\n * Redesigned offline window and release notes shown after updating;\n\nVersion 1.0:\n * Personalized confirmation and recovery e-mails;\n * Fixed login error messages;\n * Optimization and bug fixes;\n\nWhat's new in 0.9:\n * Real-time sync across devices;\n * Languages: Portuguese, English and Spanish;\n * Connection indicator (online/unstable/offline);\n",
+      "Version 1.3:\n * New light theme, switchable from the login screen and settings;\n * Minor improvements and fixes;\n\nVersion 1.2:\n * Optimization and bug fixes;\n * Greater stability and data protection;\n\nVersion 1.1:\n * New visual effects, refreshed logo and icons;\n * “Install app” button with per-browser instructions;\n * Redesigned offline window and release notes shown after updating;\n\nVersion 1.0:\n * Personalized confirmation and recovery e-mails;\n * Fixed login error messages;\n * Optimization and bug fixes;\n\nWhat's new in 0.9:\n * Real-time sync across devices;\n * Languages: Portuguese, English and Spanish;\n * Connection indicator (online/unstable/offline);\n",
 
     "misc.copied_email": "E-mail copied ✓",
     "misc.offline": "No network connection.",
@@ -396,6 +405,7 @@ const I18N = {
     "misc.retry": "Try again",
     "misc.updated_other": "Updated from another device ⟳",
     "misc.lang_changed": "Language changed ✓",
+    "misc.theme_changed": "Theme changed ✓",
     "misc.close": "Close",
 
     "kbd.title": "shortcuts",
@@ -574,6 +584,10 @@ const I18N = {
     "set.about": "Acerca de",
     "set.about_btn": "Acerca de la app",
     "set.language": "Idioma",
+    "set.theme": "Tema",
+    "theme.dark": "Oscuro",
+    "theme.light": "Claro",
+    "theme.toggle": "Cambiar tema",
     "set.account": "Cuenta",
     "set.account_sub": "Toca para gestionar tu cuenta",
 
@@ -600,7 +614,7 @@ const I18N = {
     "about.made_with": "Desarrollado con",
     "about.made_by": "por",
     "about.changelog":
-      "Versión 1.2:\n * Optimización y corrección de errores;\n * Mayor estabilidad y protección de tus datos;\n\nVersión 1.1:\n * Nuevos efectos visuales, logo e iconos renovados;\n * Botón “Instalar app” con instrucciones para cada navegador;\n * Ventana de sin conexión rediseñada y notas mostradas tras actualizar;\n\nVersión 1.0:\n * Correos de confirmación y recuperación personalizados;\n * Mensajes de error corregidos en el inicio de sesión;\n * Optimización y corrección de errores;\n\nNovedades 0.9:\n * Sincronización en tiempo real entre dispositivos;\n * Idiomas: portugués, inglés y español;\n * Indicador de conexión (en línea/inestable/sin conexión);\n",
+      "Versión 1.3:\n * Nuevo tema claro, con cambio rápido en el login y en los ajustes;\n * Pequeñas mejoras y correcciones;\n\nVersión 1.2:\n * Optimización y corrección de errores;\n * Mayor estabilidad y protección de tus datos;\n\nVersión 1.1:\n * Nuevos efectos visuales, logo e iconos renovados;\n * Botón “Instalar app” con instrucciones para cada navegador;\n * Ventana de sin conexión rediseñada y notas mostradas tras actualizar;\n\nVersión 1.0:\n * Correos de confirmación y recuperación personalizados;\n * Mensajes de error corregidos en el inicio de sesión;\n * Optimización y corrección de errores;\n\nNovedades 0.9:\n * Sincronización en tiempo real entre dispositivos;\n * Idiomas: portugués, inglés y español;\n * Indicador de conexión (en línea/inestable/sin conexión);\n",
 
     "misc.copied_email": "Correo copiado ✓",
     "misc.offline": "Sin conexión de red.",
@@ -608,6 +622,7 @@ const I18N = {
     "misc.retry": "Reintentar",
     "misc.updated_other": "Actualizado desde otro dispositivo ⟳",
     "misc.lang_changed": "Idioma cambiado ✓",
+    "misc.theme_changed": "Tema cambiado ✓",
     "misc.close": "Cerrar",
 
     "kbd.title": "atajos",

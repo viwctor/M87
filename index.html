@@ -16,6 +16,17 @@
 
   <link rel="stylesheet" href="./styles.css" />
   <title>M87</title>
+
+  <!-- aplica o tema salvo antes de pintar (evita piscar do escuro para o claro) -->
+  <script>
+    try {
+      if (localStorage.getItem("m87.theme") === "light") {
+        document.documentElement.dataset.theme = "light";
+        var mtc = document.querySelector('meta[name="theme-color"]');
+        if (mtc) mtc.setAttribute("content", "#f6f7fb");
+      }
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <!-- fundo: partículas + ruído (poeira caindo no buraco negro) -->
@@ -32,6 +43,7 @@
   <!-- tela de login -->
   <div id="auth" class="auth-screen" hidden>
     <canvas id="authFx" class="bg-fx" aria-hidden="true"></canvas>
+    <button id="authThemeToggle" class="theme-toggle" type="button" data-i18n-aria="theme.toggle" aria-label="Alternar tema"></button>
     <div class="auth-inner">
       <div class="auth-logo"><img src="./icons/logo.png" alt="" /></div>
       <h1 class="auth-title">M87</h1>
@@ -127,6 +139,14 @@
           <button class="lang-btn" data-lang="pt">Português</button>
           <button class="lang-btn" data-lang="en">English</button>
           <button class="lang-btn" data-lang="es">Español</button>
+        </div>
+      </div>
+
+      <div class="manage-section">
+        <h4 data-i18n="set.theme">Tema</h4>
+        <div class="lang-seg" id="themeSeg">
+          <button class="lang-btn" data-theme="dark" data-i18n="theme.dark">Escuro</button>
+          <button class="lang-btn" data-theme="light" data-i18n="theme.light">Claro</button>
         </div>
       </div>
 

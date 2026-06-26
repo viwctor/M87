@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.3] - 2026-06-26
+
+### Added
+- Light theme: an inverted blue/cyan palette on a white background (the logo is recolored on the fly via a CSS `invert` filter, so no new image asset is needed). Switchable from a toggle on the login screen and from a Dark/Light selector under Settings → Theme. The choice is stored per device in `localStorage` (`m87.theme`) and applied before first paint to avoid a flash.
+
+### Changed
+- The background particle dust adapts its color to the active theme (white in dark mode, slate-blue in light mode).
+
 ## [1.2] - 2026-06-18
 
 ### Changed

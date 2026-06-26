@@ -17,7 +17,7 @@
   limite: 4 créditos = 8 faltas; 2 créditos = 4 faltas; */
 
 const STORE_KEY = "m87.data";
-const APP_VERSION = "1.2";
+const APP_VERSION = "1.3";
 
 /* id único deste aparelho (para ignorar o eco das próprias escritas no tempo real) */
 const DEVICE_ID = (() => {
@@ -312,7 +312,10 @@ function renderInstallButton() {
   };
 }
 
-/* fundo animado: poeira branca. modo "orbit" (login: cai no centro) ou "drift" (app: linear) */
+/* cor da poeira do fundo: branca no escuro, azul-acinzentada no claro (definida por applyTheme) */
+let PARTICLE_COLOR = "#fff";
+
+/* fundo animado: poeira. modo "orbit" (login: cai no centro) ou "drift" (app: linear) */
 function startParticles(canvas, opts = {}) {
   if (!canvas || !canvas.getContext) return;
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -376,7 +379,7 @@ function startParticles(canvas, opts = {}) {
       ctx.globalAlpha = Math.max(0, p.al * (0.6 + 0.4 * Math.sin(p.tp)));
       ctx.beginPath();
       ctx.arc(x, y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = PARTICLE_COLOR;
       ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -1237,6 +1240,7 @@ function applyLang() {
   // cabeçalho do calendário (seg..dom = dias 1..7)
   $$(".cal-weekdays span").forEach((el, i) => (el.textContent = weekdayShort(i + 1).toLowerCase()));
   $$("#langSeg .lang-btn").forEach(b => b.classList.toggle("active", b.dataset.lang === getLang()));
+  syncThemeUI();   // reaplica estado/ícone do tema (os textos dos botões foram reescritos)
   if ($("#aboutVersion")) $("#aboutVersion").textContent = "v" + APP_VERSION;
   if (!$("#auth").hidden) setAuthMode(authMode);     // reaplica os rótulos do login
   updateSemesterButton();
@@ -1250,6 +1254,33 @@ function setLanguage(l) {
   setLang(l);
   applyLang();
   toast(t("misc.lang_changed"));
+}
+
+/* tema (claro/escuro) — preferência só do aparelho (localStorage), nunca sincronizada */
+const ICON_SUN = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`;
+const ICON_MOON = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>`;
+function getTheme() {
+  try { return localStorage.getItem("m87.theme") === "light" ? "light" : "dark"; }
+  catch (e) { return "dark"; }
+}
+function syncThemeUI(theme = getTheme()) {
+  $$("#themeSeg .lang-btn").forEach(b => b.classList.toggle("active", b.dataset.theme === theme));
+  const tog = $("#authThemeToggle");
+  if (tog) tog.innerHTML = theme === "light" ? ICON_MOON : ICON_SUN;   // mostra o destino do toque
+}
+function applyTheme(theme) {
+  const light = theme === "light";
+  if (light) document.documentElement.dataset.theme = "light";
+  else delete document.documentElement.dataset.theme;
+  PARTICLE_COLOR = light ? "#33415f" : "#fff";
+  const mtc = document.querySelector('meta[name="theme-color"]');
+  if (mtc) mtc.setAttribute("content", light ? "#f6f7fb" : "#050507");
+  syncThemeUI(theme);
+}
+function setTheme(theme) {
+  try { localStorage.setItem("m87.theme", theme); } catch (e) {}
+  applyTheme(theme);
+  toast(t("misc.theme_changed"));
 }
 
 /* menu lateral recolhível (desktop) */
@@ -1347,6 +1378,8 @@ function bindEvents() {
   $("#creditViwctor").onclick = () => window.open("https://github.com/viwctor/m87", "_blank", "noopener");
   $("#retryConn").onclick = updateConn;
   $$("#langSeg .lang-btn").forEach(b => b.onclick = () => setLanguage(b.dataset.lang));
+  $$("#themeSeg .lang-btn").forEach(b => b.onclick = () => setTheme(b.dataset.theme));
+  $("#authThemeToggle").onclick = () => setTheme(getTheme() === "light" ? "dark" : "light");
   $("#navCollapse").onclick = toggleNav;
 
   // gesto de deslizar: dentro da grade do calendário = troca o mês; fora dela = troca a guia
@@ -1603,6 +1636,7 @@ async function init() {
   bindEvents();
   bindAuthEvents();
   registerSW();
+  applyTheme(getTheme());
   applyLang();
   applyNavCollapsed(localStorage.getItem("m87.navCollapsed") === "1");
   setConn(navigator.onLine ? "online" : "offline");

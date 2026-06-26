@@ -787,3 +787,110 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 }
 
 [hidden] { display: none !important; }
+
+/* ============================================================
+   TEMA CLARO
+   "inverte" a paleta: fundo branco, acento azul/ciano (logo
+   invertida). Só redefine variáveis e ajusta os poucos pontos
+   com cores fixas (header, nav, login, terminal, hachuras).
+   ============================================================ */
+.theme-toggle {
+  position: fixed; z-index: 95;
+  top: calc(16px + env(safe-area-inset-top, 0px)); right: 16px;
+  width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-2);
+  color: var(--text);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: background .15s, border-color .15s, transform .12s;
+}
+.theme-toggle:hover { background: rgba(255, 255, 255, 0.12); }
+.theme-toggle:active { transform: scale(.92); }
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg:        #f6f7fb;
+  --bg-2:      #ffffff;
+  --surface:   #ffffff;
+  --surface-2: #eef1f7;
+  --border:    rgba(15, 23, 42, 0.10);
+  --border-2:  rgba(15, 23, 42, 0.16);
+
+  --text:      #161a22;
+  --muted:     #5a6373;
+  --faint:     #9099a8;
+
+  /* acento azul/ciano — a logo laranja invertida */
+  --accent:      #0a84ff;
+  --accent-2:    #0bb6c9;
+  --accent-grad: linear-gradient(135deg, #0a84ff 0%, #1aa6e0 55%, #2fd0d8 100%);
+  --accent-glow: rgba(10, 132, 255, 0.30);
+
+  /* status um pouco mais escuros para ler bem no branco */
+  --safe:     #14a37f;
+  --warn:     #c8870d;
+  --danger:   #e23a1c;
+  --critical: #d61f1f;
+
+  --shadow: 0 10px 34px rgba(20, 32, 64, 0.14);
+}
+
+/* brilho azulado no topo (no lugar do laranja do buraco negro) */
+[data-theme="light"] body {
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(10, 132, 255, 0.10), transparent 60%),
+    var(--bg);
+}
+
+/* superfícies que tinham cor fixa escura */
+[data-theme="light"] .app-header { background: #ffffff; }
+[data-theme="light"] .bottom-nav {
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.86));
+}
+[data-theme="light"] .auth-screen { background: #f3f5fa; }
+
+/* logo: inverte as cores (fundo preto -> branco, traços laranja -> azul/ciano) */
+[data-theme="light"] .splash-bh img,
+[data-theme="light"] .auth-logo img,
+[data-theme="light"] .brand-logo,
+[data-theme="light"] .nav-logo img { filter: invert(1); }
+
+/* botão de alternar tema no login */
+[data-theme="light"] .theme-toggle { background: rgba(15, 23, 42, 0.04); }
+[data-theme="light"] .theme-toggle:hover { background: rgba(15, 23, 42, 0.09); }
+
+/* texto sobre o acento fica branco no claro */
+[data-theme="light"] .btn-primary,
+[data-theme="light"] .btn-danger-fill,
+[data-theme="light"] .fab,
+[data-theme="light"] .account-avatar { color: #ffffff; }
+
+/* "professor faltou": hachura branca não aparece no branco -> escurece */
+[data-theme="light"] .seg-btn.active[data-val="prof"] { background: rgba(90, 100, 120, .12); color: #4a5160; border-color: var(--border-2); }
+[data-theme="light"] .cal-slot.s-prof {
+  background-image: repeating-linear-gradient(45deg, rgba(20, 30, 55, .20) 0 4px, transparent 4px 8px);
+  background-color: rgba(120, 130, 150, .22);
+}
+[data-theme="light"] .dot-prof {
+  background-image: repeating-linear-gradient(45deg, rgba(20, 30, 55, .5) 0 3px, transparent 3px 6px);
+  background-color: #aeb4c2;
+}
+[data-theme="light"] .cal-cell.noclassday {
+  background:
+    repeating-linear-gradient(45deg, rgba(20, 30, 55, .05) 0 5px, transparent 5px 10px),
+    #eceff5;
+}
+
+/* selo de sala (era laranja fixo) e alertas com pouca legibilidade no branco */
+[data-theme="light"] .mc-room { color: #0784c0; background: rgba(10, 132, 255, .10); border-color: rgba(10, 132, 255, .26); }
+[data-theme="light"] .a-warn { color: #9a6a07; }
+[data-theme="light"] .a-critical { color: #d62a2a; }
+
+/* terminal da tela "sobre" */
+[data-theme="light"] .about-modal .terminal { background: #f3f5fa; color: #3a4150; }
+[data-theme="light"] .t-log { color: #6b7280; }
+
+/* barra de atalhos (desktop) tinha fundo escuro fixo */
+[data-theme="light"] .kbd-hints { background: rgba(255, 255, 255, 0.92); }
