@@ -184,11 +184,7 @@ so the app works equally at a domain root or a sub-path.
 
 ## Roadmap
 
-- [ ] Path-based routing (`/calendar`) instead of hash routing
-- [ ] Shareable and exportable semester schedule
-- [ ] Reminders before reaching an absence limit
-- [ ] Optional light theme
-- [ ] Advanced analytics dashboard
+- [x] Optional light theme
 
 ## License
 
